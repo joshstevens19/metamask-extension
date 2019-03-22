@@ -19,6 +19,7 @@ const NewAccountModal = require('./new-account-modal')
 const HideTokenConfirmationModal = require('./hide-token-confirmation-modal')
 const NotifcationModal = require('./notification-modal')
 const QRScanner = require('./qr-scanner')
+import SignatureRequestModal from './signature-request-modal'
 
 import ConfirmRemoveAccount from './confirm-remove-account'
 import ConfirmResetAccount from './confirm-reset-account'
@@ -397,6 +398,26 @@ const MODALS = {
     customOnHideOpts: {
       action: resetCustomGasData,
       args: [],
+    },
+  },
+
+  SIGNATURE_REQUEST: {
+    contents: [ h(SignatureRequestModal) ],
+    mobileModalStyle: {
+      ...modalContainerMobileStyle,
+      width: '100%',
+      height: '100%',
+      top: '0px',
+      zIndex: 1000000,
+    },
+    laptopModalStyle: {
+      ...modalContainerLaptopStyle,
+      top: '10%',
+      zIndex: 1000000,
+      left: '49%',
+    },
+    contentStyle: {
+      borderRadius: '8px',
     },
   },
 
