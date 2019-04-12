@@ -252,7 +252,9 @@ module.exports = class MetamaskController extends EventEmitter {
       preferencesController: this.preferencesController,
     })
 
-    this.permissionsController = new PermissionsController()
+    this.permissionsController = new PermissionsController({
+      openPopup: opts.openPopup,
+    })
 
     this.store.updateStructure({
       AppStateController: this.appStateController.store,
