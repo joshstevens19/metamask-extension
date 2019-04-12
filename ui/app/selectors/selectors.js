@@ -49,9 +49,13 @@ const selectors = {
   getNumberOfAccounts,
   getNumberOfTokens,
   isEthereumNetwork,
+<<<<<<< HEAD
   getMetaMetricState,
   getRpcPrefsForCurrentProvider,
   getKnownMethodData,
+=======
+  getPermissionsDescriptions,
+>>>>>>> 561cedb5a... ui - add permissions approval ui
 }
 
 module.exports = selectors
@@ -319,6 +323,7 @@ function getAdvancedInlineGasShown (state) {
   return Boolean(state.metamask.featureFlags.advancedInlineGas)
 }
 
+<<<<<<< HEAD
 function getMetaMetricState (state) {
   return {
     network: getCurrentNetworkId(state),
@@ -348,3 +353,8 @@ function getKnownMethodData (state, data) {
 
   return knownMethodData && knownMethodData[fourBytePrefix]
 }
+=======
+function getPermissionsDescriptions (state) {
+  return state.metamask.permissionsDescriptions
+}
+>>>>>>> 561cedb5a... ui - add permissions approval ui
