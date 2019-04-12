@@ -254,6 +254,7 @@ module.exports = class MetamaskController extends EventEmitter {
 
     this.permissionsController = new PermissionsController({
       openPopup: opts.openPopup,
+      closePopup: opts.closePopup,
     })
 
     this.store.updateStructure({
@@ -508,8 +509,8 @@ module.exports = class MetamaskController extends EventEmitter {
       rejectProviderRequest: providerApprovalController.rejectProviderRequest.bind(providerApprovalController),
 
       // permissions
-      approvePermissionRequest: nodeify(this.permissionsController.approvePermissions, this.permissionsController),
-      rejectPermissionRequest: nodeify(this.permissionsController.rejectPermissions, this.permissionsController),
+      approvePermissionRequest: nodeify(this.permissionsController.approvePermissionRequest, this.permissionsController),
+      rejectPermissionRequest: nodeify(this.permissionsController.rejectPermissionRequest, this.permissionsController),
     }
   }
 
