@@ -1412,7 +1412,7 @@ module.exports = class MetamaskController extends EventEmitter {
     engine.push(filterMiddleware)
     engine.push(subscriptionManager.middleware)
     // permissions
-    engine.push(this.permissions.createMiddleware({ origin }))
+    engine.push(this.permissionsController.createMiddleware({ origin }))
     // watch asset
     engine.push(this.preferencesController.requestWatchAsset.bind(this.preferencesController))
     // requestAccounts
