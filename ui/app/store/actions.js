@@ -345,8 +345,8 @@ var actions = {
   clearApprovedOrigins,
 
   // Permissions
-  approvePermissionRequest,
-  rejectPermissionRequest,
+  approvePermissionsRequest,
+  rejectPermissionsRequest,
 
   setFirstTimeFlowType,
   SET_FIRST_TIME_FLOW_TYPE: 'SET_FIRST_TIME_FLOW_TYPE',
@@ -2624,15 +2624,23 @@ function clearApprovedOrigins () {
 
 // Permissions
 
-function approvePermissionRequest (requestId) {
+/**
+ * Approves the permission requests with the given IDs.
+ * @param {Array} requestId 
+ */
+function approvePermissionsRequest (requestId) {
   return (dispatch) => {
-    background.approvePermissionRequest(requestId)
+    background.approvePermissionsRequest(requestId)
   }
 }
 
-function rejectPermissionRequest (requestId) {
+/**
+ * Rejects the permission requests with the given IDs.
+ * @param {Array} requestId 
+ */
+function rejectPermissionsRequest (requestId) {
   return (dispatch) => {
-    background.rejectPermissionRequest(requestId)
+    background.rejectPermissionsRequest(requestId)
   }
 }
 

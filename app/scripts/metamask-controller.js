@@ -509,8 +509,8 @@ module.exports = class MetamaskController extends EventEmitter {
       rejectProviderRequest: providerApprovalController.rejectProviderRequest.bind(providerApprovalController),
 
       // permissions
-      approvePermissionRequest: nodeify(this.permissionsController.approvePermissionRequest, this.permissionsController),
-      rejectPermissionRequest: nodeify(this.permissionsController.rejectPermissionRequest, this.permissionsController),
+      approvePermissionsRequest: nodeify(this.permissionsController.approvePermissionsRequest, this.permissionsController),
+      rejectPermissionsRequest: nodeify(this.permissionsController.rejectPermissionsRequest, this.permissionsController),
     }
   }
 

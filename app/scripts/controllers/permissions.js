@@ -25,7 +25,7 @@ class PermissionsController {
     return this.permissions.providerMiddlewareFunction.bind(this.permissions, origin)
   }
 
-  async approvePermissionRequest (id) {
+  async approvePermissionsRequest (id) {
     const approval = this.pendingApprovals[id]
     const res = approval.res
     res(true)
@@ -33,7 +33,7 @@ class PermissionsController {
     delete this.pendingApprovals[id]
   }
 
-  async rejectPermissionRequest (id) {
+  async rejectPermissionsRequest (id) {
     const approval = this.pendingApprovals[id]
     const rej = approval.rej
     rej(false)

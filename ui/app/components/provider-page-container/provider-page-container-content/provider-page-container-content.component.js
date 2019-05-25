@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types'
 import React, {PureComponent} from 'react'
-import Identicon from '../../../ui/identicon'
+import Identicon from '../../identicon'
+import AccountDropdownMini from '../../account-dropdown-mini'
 
-export default class PermissionPageContainerContent extends PureComponent {
+export default class ProviderPageContainerContent extends PureComponent {
   static propTypes = {
-    requests: PropTypes.array.isRequired,
+    request: PropTypes.object.isRequired,
     selectedIdentity: PropTypes.object.isRequired,
     permissionsDescriptions: PropTypes.array.isRequired,
   }
@@ -14,29 +15,29 @@ export default class PermissionPageContainerContent extends PureComponent {
   };
 
   renderConnectVisual = () => {
-    const { requests, selectedIdentity } = this.props
-    const { origin, siteImage, siteTitle } = requests[0].metadata
+    const { request, selectedIdentity } = this.props
+    const { origin, siteImage, siteTitle } = request.metadata
 
     return (
-      <div className="permission-approval-visual">
+      <div className="provider-approval-visual">
         <section>
           {siteImage ? (
             <img
-              className="permission-approval-visual__identicon"
+              className="provider-approval-visual__identicon"
               src={siteImage}
             />
           ) : (
-            <i className="permission-approval-visual__identicon--default">
+            <i className="provider-approval-visual__identicon--default">
               {siteTitle.charAt(0).toUpperCase()}
             </i>
           )}
           <h1>{siteTitle}</h1>
           <h2>{origin}</h2>
         </section>
-        <span className="permission-approval-visual__check" />
+        <span className="provider-approval-visual__check" />
         <section>
           <Identicon
-            className="permission-approval-visual__identicon"
+            className="provider-approval-visual__identicon"
             address={selectedIdentity.address}
             diameter={64}
           />
@@ -46,22 +47,22 @@ export default class PermissionPageContainerContent extends PureComponent {
     )
   }
 
-  renderRequestedPermissions () {
-    const { requests, permissionsDescriptions } = this.props
+  renderRequestedPermissions = () => {
+    const { request, permissionsDescriptions } = this.props
+    const { options } = request
     const { t } = this.context
+    const optsArr = Object.keys(options)
 
-    const items = requests.map((req) => {
-      const matchingFuncs = permissionsDescriptions.filter(
-        perm => perm.method === req.options.method
-      )
+    const items = optsArr.map((funcName) => {
+      const matchingFuncs = permissionsDescriptions.filter(perm => perm.method === funcName)
       const match = matchingFuncs[0]
-      if (!match) { // TODO: handle gracefully
-        throw new Error('Requested unknown permission: ' + req.options.method)
+      if (!match) {
+        throw new Error('Requested unknown permission.')
       }
       return (
         <li
           className="permission-requested"
-          key={req.options.method}
+          key={funcName}
           >
           {match.description}
         </li>
@@ -77,17 +78,18 @@ export default class PermissionPageContainerContent extends PureComponent {
   }
 
   render () {
-    const { requests } = this.props
-    const { siteTitle } = requests[0].metadata
+    const { request } = this.props
+    const { siteTitle } = request.metadata
     const { t } = this.context
 
     return (
-      <div className="permission-approval-container__content">
+      <div className="provider-approval-container__content">
         <section>
           <h2>{t('connectRequest')}</h2>
           {this.renderConnectVisual()}
-          <h1>{t('permissionsRequests', [siteTitle])}</h1>
-          <section>
+          <h1>{t('providerRequest', [siteTitle])}</h1>
+          <AccountDropdownMini className="provider-approval-container__content"/>
+          <p>
             <br/>
             {this.renderRequestedPermissions()}
             <br/>
@@ -98,7 +100,7 @@ export default class PermissionPageContainerContent extends PureComponent {
             >
               {t('learnMore')}.
             </a>
-          </section>
+          </p>
         </section>
         <section className="secure-badge">
           <img src="/images/mm-secure.svg" />
@@ -107,3 +109,4 @@ export default class PermissionPageContainerContent extends PureComponent {
     )
   }
 }
+

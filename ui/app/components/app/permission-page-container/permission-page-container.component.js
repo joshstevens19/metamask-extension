@@ -5,9 +5,9 @@ import { PageContainerFooter } from '../../ui/page-container'
 
 export default class PermissionPageContainer extends PureComponent {
   static propTypes = {
-    approvePermissionRequest: PropTypes.func.isRequired,
-    rejectPermissionRequest: PropTypes.func.isRequired,
-    request: PropTypes.object.isRequired,
+    approvePermissionsRequest: PropTypes.func.isRequired,
+    rejectPermissionsRequest: PropTypes.func.isRequired,
+    requests: PropTypes.array.isRequired,
   };
 
   static contextTypes = {
@@ -26,26 +26,26 @@ export default class PermissionPageContainer extends PureComponent {
   }
 
   onCancel = () => {
-    const { request, rejectPermissionRequest } = this.props
-    const { id } = request.metadata
-    rejectPermissionRequest(id)
+    const { requests, rejectPermissionsRequest } = this.props
+    const id = requests[0].metadata.id
+    rejectPermissionsRequest(id)
   }
 
   onSubmit = () => {
-    const { request, approvePermissionRequest } = this.props
-    const { id } = request.metadata
-    approvePermissionRequest(id)
+    const { requests, approvePermissionsRequest } = this.props
+    const id = requests[0].metadata.id
+    approvePermissionsRequest(id)
   }
 
   render () {
-    const { request } = this.props
-    const { origin, siteImage, siteTitle } = request
+    const { requests } = this.props
+    const { origin, siteImage, siteTitle } = requests[0]
 
     return (
       <div className="page-container permission-approval-container">
         <PermissionPageContainerHeader />
         <PermissionPageContainerContent
-          request={request}
+          requests={requests}
           origin={origin}
           siteImage={siteImage}
           siteTitle={siteTitle}

@@ -4,9 +4,9 @@ import PermissionPageContainer from '../../components/app/permission-page-contai
 
 export default class PermissionApproval extends Component {
   static propTypes = {
-    approvePermissionRequest: PropTypes.func.isRequired,
-    permissionRequest: PropTypes.object.isRequired,
-    rejectPermissionRequest: PropTypes.func.isRequired,
+    approvePermissionsRequest: PropTypes.func.isRequired,
+    permissionsRequests: PropTypes.array.isRequired,
+    rejectPermissionsRequest: PropTypes.func.isRequired,
   };
 
   static contextTypes = {
@@ -14,12 +14,12 @@ export default class PermissionApproval extends Component {
   };
 
   render () {
-    const { approvePermissionRequest, permissionRequest, rejectPermissionRequest } = this.props
+    const { approvePermissionsRequest, permissionsRequests, rejectPermissionsRequest } = this.props
     return (
       <PermissionPageContainer
-        approvePermissionRequest={approvePermissionRequest}
-        rejectPermissionRequest={rejectPermissionRequest}
-        request={permissionRequest}
+        approvePermissionsRequest={approvePermissionsRequest}
+        rejectPermissionsRequest={rejectPermissionsRequest}
+        requests={permissionsRequests}
       />
     )
   }

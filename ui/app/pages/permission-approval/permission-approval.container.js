@@ -1,11 +1,11 @@
 import { connect } from 'react-redux'
 import PermissionApproval from './permission-approval.component'
-import { approvePermissionRequest, rejectPermissionRequest } from '../../store/actions'
+import { approvePermissionsRequest, rejectPermissionsRequest } from '../../store/actions'
 
 function mapDispatchToProps (dispatch) {
   return {
-    approvePermissionRequest: requestId => dispatch(approvePermissionRequest(requestId)),
-    rejectPermissionRequest: requestId => dispatch(rejectPermissionRequest(requestId)),
+    approvePermissionsRequest: requestId => dispatch(approvePermissionsRequest(requestId)),
+    rejectPermissionsRequest: requestId => dispatch(rejectPermissionsRequest(requestId)),
   }
 }
 
