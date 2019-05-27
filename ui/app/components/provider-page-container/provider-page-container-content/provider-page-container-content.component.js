@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
-import React, {PureComponent} from 'react'
-import Identicon from '../../identicon'
-import AccountDropdownMini from '../../account-dropdown-mini'
+import React, { PureComponent } from 'react'
+import Identicon from '../../ui/identicon'
 
 export default class ProviderPageContainerContent extends PureComponent {
   static propTypes = {
@@ -88,7 +87,6 @@ export default class ProviderPageContainerContent extends PureComponent {
           <h2>{t('connectRequest')}</h2>
           {this.renderConnectVisual()}
           <h1>{t('providerRequest', [siteTitle])}</h1>
-          <AccountDropdownMini className="provider-approval-container__content"/>
           <p>
             <br/>
             {this.renderRequestedPermissions()}

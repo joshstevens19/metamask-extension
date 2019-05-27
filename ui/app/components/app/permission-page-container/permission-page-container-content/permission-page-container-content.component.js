@@ -1,12 +1,14 @@
 import PropTypes from 'prop-types'
 import React, {PureComponent} from 'react'
 import Identicon from '../../../ui/identicon'
+import AccountDropdownMini from '../../../ui/account-dropdown-mini'
 
 export default class PermissionPageContainerContent extends PureComponent {
   static propTypes = {
     requests: PropTypes.array.isRequired,
-    selectedIdentity: PropTypes.object.isRequired,
+    selectedAccount: PropTypes.object.isRequired,
     permissionsDescriptions: PropTypes.array.isRequired,
+    onAccountSelect: PropTypes.func.isRequired,
   }
 
   static contextTypes = {
@@ -14,8 +16,9 @@ export default class PermissionPageContainerContent extends PureComponent {
   };
 
   renderConnectVisual = () => {
-    const { requests, selectedIdentity } = this.props
+    const { requests, selectedAccount, onAccountSelect } = this.props
     const { origin, siteImage, siteTitle } = requests[0].metadata
+    const { t } = this.context
 
     return (
       <div className="permission-approval-visual">
@@ -30,17 +33,21 @@ export default class PermissionPageContainerContent extends PureComponent {
               {siteTitle.charAt(0).toUpperCase()}
             </i>
           )}
-          <h1>{siteTitle}</h1>
+          <h1>{t(siteTitle)}</h1>
           <h2>{origin}</h2>
         </section>
         <span className="permission-approval-visual__check" />
         <section>
           <Identicon
             className="permission-approval-visual__identicon"
-            address={selectedIdentity.address}
+            address={selectedAccount.address}
             diameter={64}
           />
-          <h1>{selectedIdentity.name}</h1>
+          <AccountDropdownMini
+            className="permission-approval-container__content"
+            onSelect={onAccountSelect}
+            selectedAccount={selectedAccount}
+          />
         </section>
       </div>
     )
@@ -48,7 +55,6 @@ export default class PermissionPageContainerContent extends PureComponent {
 
   renderRequestedPermissions () {
     const { requests, permissionsDescriptions } = this.props
-    const { t } = this.context
 
     const items = requests.map((req) => {
       const matchingFuncs = permissionsDescriptions.filter(
@@ -70,7 +76,6 @@ export default class PermissionPageContainerContent extends PureComponent {
 
     return (
       <ul className="permissions-requested">
-        <h4>{t('permissionsRequests')}</h4>
         {items}
       </ul>
     )
@@ -86,9 +91,9 @@ export default class PermissionPageContainerContent extends PureComponent {
         <section>
           <h2>{t('connectRequest')}</h2>
           {this.renderConnectVisual()}
-          <h1>{t('permissionsRequests', [siteTitle])}</h1>
           <section>
-            <br/>
+            <h1>{t(siteTitle)}</h1>
+            <h2>{'Would like to:'}</h2>
             {this.renderRequestedPermissions()}
             <br/>
             <a

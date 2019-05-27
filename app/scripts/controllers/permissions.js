@@ -114,16 +114,16 @@ class PermissionsController {
         },
       },
 
-       /*
-      * A promise-returning callback used to determine whether to approve
-      * permissions requests or not.
-      *
-      * Currently only returns a boolean, but eventually should return any specific parameters or amendments to the permissions.
-      *
-      * @param {string} domain - The requesting domain string
-      * @param {string} req - The request object sent in to the `requestPermissions` method.
-      * @returns {Promise<bool>} approved - Whether the user approves the request or not.
-      */
+      /**
+       * A promise-returning callback used to determine whether to approve
+       * permissions requests or not.
+       *
+       * Currently only returns a boolean, but eventually should return any specific parameters or amendments to the permissions.
+       *
+       * @param {string} domain - The requesting domain string
+       * @param {string} req - The request object sent in to the `requestPermissions` method.
+       * @returns {Promise<bool>} approved - Whether the user approves the request or not.
+       */
       requestUserApproval: async (metadata, opts) => {
         const { id } = metadata
 

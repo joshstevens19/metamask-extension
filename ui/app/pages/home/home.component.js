@@ -58,6 +58,8 @@ export default class Home extends PureComponent {
       return <Redirect to={{ pathname: RESTORE_VAULT_ROUTE }} />
     }
 
+    // TODO:rpc-cap unclear on the difference between provider requests/approval
+    // and permissions requests/approval
     if (providerRequests && providerRequests.length > 0) {
       return (
         <ProviderApproval providerRequest={providerRequests[0]} />

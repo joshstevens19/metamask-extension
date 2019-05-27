@@ -1,12 +1,15 @@
 import PropTypes from 'prop-types'
-import React, {PureComponent} from 'react'
+import React, { Component } from 'react'
 import { PermissionPageContainerContent, PermissionPageContainerHeader } from '.'
 import { PageContainerFooter } from '../../ui/page-container'
 
-export default class PermissionPageContainer extends PureComponent {
+export default class PermissionPageContainer extends Component {
+
   static propTypes = {
     approvePermissionsRequest: PropTypes.func.isRequired,
     rejectPermissionsRequest: PropTypes.func.isRequired,
+    selectedIdentity: PropTypes.object.isRequired,
+    permissionsDescriptions: PropTypes.array.isRequired,
     requests: PropTypes.array.isRequired,
   };
 
@@ -14,6 +17,13 @@ export default class PermissionPageContainer extends PureComponent {
     t: PropTypes.func,
     metricsEvent: PropTypes.func,
   };
+
+  constructor (props) {
+    super(props)
+    this.state = {
+      selectedAccount: props.selectedIdentity,
+    }
+  }
 
   componentDidMount () {
     this.context.metricsEvent({
@@ -32,23 +42,33 @@ export default class PermissionPageContainer extends PureComponent {
   }
 
   onSubmit = () => {
+
+    // some sanity validation
+    if (!this.state.selectedAccount) throw new Error(
+      'Fatal: no account selected'
+    )
+
     const { requests, approvePermissionsRequest } = this.props
     const id = requests[0].metadata.id
+    // TODO:5-27 make sure the correct account is passed forward
     approvePermissionsRequest(id)
   }
 
+  onAccountSelect = selectedAccount => {
+    this.setState({ selectedAccount })
+  }
+
   render () {
-    const { requests } = this.props
-    const { origin, siteImage, siteTitle } = requests[0]
+    const { requests, permissionsDescriptions } = this.props
 
     return (
       <div className="page-container permission-approval-container">
         <PermissionPageContainerHeader />
         <PermissionPageContainerContent
           requests={requests}
-          origin={origin}
-          siteImage={siteImage}
-          siteTitle={siteTitle}
+          onAccountSelect={this.onAccountSelect}
+          selectedAccount={this.state.selectedAccount}
+          permissionsDescriptions={permissionsDescriptions}
         />
         <PageContainerFooter
           onCancel={() => this.onCancel()}
