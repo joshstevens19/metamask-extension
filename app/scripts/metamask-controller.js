@@ -255,7 +255,12 @@ module.exports = class MetamaskController extends EventEmitter {
     this.permissionsController = new PermissionsController({
       openPopup: opts.openPopup,
       closePopup: opts.closePopup,
-    })
+      getAccounts: async () => {
+        return this.keyringController.getAccounts()
+      }
+    },
+    // TOOD: Persist/restore state here:
+    {})
 
     this.store.updateStructure({
       AppStateController: this.appStateController.store,
@@ -268,7 +273,7 @@ module.exports = class MetamaskController extends EventEmitter {
       NetworkController: this.networkController.store,
       InfuraController: this.infuraController.store,
       CachedBalancesController: this.cachedBalancesController.store,
-      PermissionsController: this.permissionsController.store,
+      PermissionsController: this.permissionsController.permissions,
     })
 
     this.memStore = new ComposableObservableStore(null, {
@@ -290,7 +295,7 @@ module.exports = class MetamaskController extends EventEmitter {
       ShapeshiftController: this.shapeshiftController,
       InfuraController: this.infuraController.store,
       ProviderApprovalController: this.providerApprovalController.store,
-      PermissionsController: this.permissionsController.memStore,
+      PermissionsController: this.permissionsController.permissions,
     })
     this.memStore.subscribe(this.sendUpdate.bind(this))
   }

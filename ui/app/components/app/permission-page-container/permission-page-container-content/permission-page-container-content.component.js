@@ -62,6 +62,7 @@ export default class PermissionPageContainerContent extends PureComponent {
       )
       const match = matchingFuncs[0]
       if (!match) { // TODO: handle gracefully
+        console.log('Failed to match!')
         throw new Error('Requested unknown permission: ' + req.options.method)
       }
       return (

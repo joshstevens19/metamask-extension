@@ -10,10 +10,9 @@ const mapStateToProps = state => {
     lostAccounts,
     suggestedTokens,
     providerRequests,
-    requests,
+    permissionsRequests,
   } = metamask
   const { forgottenPassword } = appState
-  const permissionsRequests = requests.permissionsRequests || []
 
   return {
     lostAccounts,

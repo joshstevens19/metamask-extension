@@ -350,5 +350,5 @@ function getKnownMethodData (state, data) {
 }
 
 function getPermissionsDescriptions (state) {
-  return state.metamask.requests.permissionsDescriptions
+  return state.metamask.permissionsDescriptions
 }

@@ -1,24 +1,16 @@
 // Methods that do not require any permissions to use:
 const SAFE_METHODS = require('../lib/permissions-safe-methods.json')
-const createPermissions = require('json-rpc-capabilities-middleware')
+const RpcCap = require('json-rpc-capabilities-middleware').CapabilitiesController
 const ComposableObservableStore = require('../lib/ComposableObservableStore')
-
 
 class PermissionsController {
 
-  constructor ({ openPopup, closePopup } = {}) {
+  constructor ({ openPopup, closePopup, getAccounts } = {}, restoredState) {
     this._openPopup = openPopup
     this._closePopup = closePopup
+    this.getAccounts = getAccounts
 
-    const initState = { permissions: {}, requests: {} }
-
-    this._initializePermissions()
-    // setup stores
-    this.store = this.permissions.store
-    this.memStore = new ComposableObservableStore(initState, {
-      permissions: this.permissions.store,
-      requests: this.permissions.memStore,
-    })
+    this._initializePermissions(restoredState)
   }
 
   createMiddleware ({ origin }) {
@@ -46,7 +38,7 @@ class PermissionsController {
   }
 
   async selectAccountsFor (domain, opts) {
-    const accounts = await this.keyringController.getAccounts()
+    const accounts = await this.getAccounts()
     const approved = accounts.filter(acct => confirm(`Would you like to reveal account ${acct}?`))
     return {
       caveats: [{
@@ -62,14 +54,14 @@ class PermissionsController {
    *
    * @param {string} origin = The origin string representing the domain.
    */
-  _initializePermissions () {
+  _initializePermissions (restoredState) {
     this.testProfile = {
       name: 'Dan Finlay',
     }
 
     this.pendingApprovals = {}
 
-    this.permissions = createPermissions({
+    this.permissions = new RpcCap({
 
        // Supports passthrough methods:
       safeMethods: SAFE_METHODS,
@@ -82,7 +74,7 @@ class PermissionsController {
         'eth_accounts': {
           description: 'View Ethereum accounts',
           method: (req, res, next, end) => {
-            this.keyringController.getAccounts()
+            this.getAccounts()
             .then((accounts) => {
               res.result = accounts
               end()
@@ -135,12 +127,14 @@ class PermissionsController {
 
         return new Promise((res, rej) => {
           this.pendingApprovals[id] = { res, rej }
-        })
+        },
+        // TODO: This should be persisted/restored state.
+        {})
 
          // TODO: Attenuate requested permissions in approval screen.
         // Like selecting the account to display.
       },
-    })
+    }, restoredState)
   }
 
 }
