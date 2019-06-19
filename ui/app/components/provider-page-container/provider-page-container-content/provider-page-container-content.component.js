@@ -50,6 +50,7 @@ export default class ProviderPageContainerContent extends PureComponent {
     const { request, permissionsDescriptions } = this.props
     const { options } = request
     const { t } = this.context
+    console.log('permissions is ', request, permissionsDescriptions);
     const optsArr = Object.keys(options)
 
     const items = optsArr.map((funcName) => {
