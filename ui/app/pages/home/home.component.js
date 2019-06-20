@@ -68,13 +68,7 @@ export default class Home extends PureComponent {
 
     if (permissionsRequests && permissionsRequests.length > 0) {
       return (
-        <PermissionApproval permissionsRequests={
-          permissionsRequests.filter(
-            // this is unlikely to, but could, contain permissions from
-            // different requests; filter by the id of the first request
-            p => p.metadata.id === permissionsRequests[0].metadata.id
-          )
-        } />
+        <PermissionApproval permissionsRequests = {permissionsRequests}/>
       )
     }
 

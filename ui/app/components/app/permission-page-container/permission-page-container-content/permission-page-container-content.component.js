@@ -17,7 +17,10 @@ export default class PermissionPageContainerContent extends PureComponent {
 
   renderConnectVisual = () => {
     const { requests, selectedAccount, onAccountSelect } = this.props
-    const { origin, siteImage, siteTitle } = requests[0].metadata
+    const { origin, siteImage } = requests[0].metadata
+
+    // TODO: Actually pass site title from contentscript with request.
+    const siteTitle = origin;
     const { t } = this.context
 
     return (
@@ -56,19 +59,24 @@ export default class PermissionPageContainerContent extends PureComponent {
   renderRequestedPermissions () {
     const { requests, permissionsDescriptions } = this.props
 
-    const items = requests.map((req) => {
-      const matchingFuncs = permissionsDescriptions.filter(
-        perm => perm.method === req.options.method
-      )
+    const request = requests[0];
+
+    const requestedMethods = Object.keys(request.permissions)
+
+    const items = requestedMethods.map((methodName) => {
+      const req = request.permissions[methodName];
+      const matchingFuncs = permissionsDescriptions.filter((perm) => {
+        return perm.method === methodName
+      })
+
       const match = matchingFuncs[0]
-      if (!match) { // TODO: handle gracefully
-        console.log('Failed to match!')
-        throw new Error('Requested unknown permission: ' + req.options.method)
+      if (!match) {
+        throw new Error('Requested unknown permission: ' + methodName)
       }
       return (
         <li
           className="permission-requested"
-          key={req.options.method}
+          key={methodName}
           >
           {match.description}
         </li>
@@ -84,7 +92,8 @@ export default class PermissionPageContainerContent extends PureComponent {
 
   render () {
     const { requests } = this.props
-    const { siteTitle } = requests[0].metadata
+    const { origin } = requests[0].metadata
+    const { siteTitle } = origin
     const { t } = this.context
 
     return (

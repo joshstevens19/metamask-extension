@@ -2,9 +2,10 @@ import PropTypes from 'prop-types'
 import React, { PureComponent } from 'react'
 import Identicon from '../../ui/identicon'
 
+
 export default class ProviderPageContainerContent extends PureComponent {
   static propTypes = {
-    request: PropTypes.object.isRequired,
+    requests: PropTypes.object.isRequired,
     selectedIdentity: PropTypes.object.isRequired,
     permissionsDescriptions: PropTypes.array.isRequired,
   }
@@ -14,6 +15,9 @@ export default class ProviderPageContainerContent extends PureComponent {
   };
 
   renderConnectVisual = () => {
+    // TODO: Is this component dead? Should we remove this file?
+    // I THINK THIS COMPONENT IS TRULY DEAD. Please see:
+    // ui/app/components/app/permission-page-container/permission-page-container-content/permission-page-container-content.component.js
     const { request, selectedIdentity } = this.props
     const { origin, siteImage, siteTitle } = request.metadata
 
@@ -50,8 +54,8 @@ export default class ProviderPageContainerContent extends PureComponent {
     const { request, permissionsDescriptions } = this.props
     const { options } = request
     const { t } = this.context
-    console.log('permissions is ', request, permissionsDescriptions);
     const optsArr = Object.keys(options)
+
 
     const items = optsArr.map((funcName) => {
       const matchingFuncs = permissionsDescriptions.filter(perm => perm.method === funcName)

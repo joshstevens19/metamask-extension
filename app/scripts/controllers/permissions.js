@@ -1,7 +1,6 @@
 // Methods that do not require any permissions to use:
 const SAFE_METHODS = require('../lib/permissions-safe-methods.json')
 const RpcCap = require('json-rpc-capabilities-middleware').CapabilitiesController
-const ComposableObservableStore = require('../lib/ComposableObservableStore')
 
 class PermissionsController {
 
@@ -13,14 +12,15 @@ class PermissionsController {
     this._initializePermissions(restoredState)
   }
 
-  createMiddleware ({ origin }) {
-    return this.permissions.providerMiddlewareFunction.bind(this.permissions, origin)
+  createMiddleware (options) {
+    return this.permissions.providerMiddlewareFunction.bind(this.permissions, options)
   }
 
-  async approvePermissionsRequest (id) {
+  async approvePermissionsRequest (approved) {
+    const id = approved.metadata.id
     const approval = this.pendingApprovals[id]
     const res = approval.res
-    res(true)
+    res(approved.permissions)
     this._closePopup && this._closePopup()
     delete this.pendingApprovals[id]
   }
@@ -31,10 +31,6 @@ class PermissionsController {
     rej(false)
     this._closePopup && this._closePopup()
     delete this.pendingApprovals[id]
-  }
-
-  async approvePermissions (domain, opts) {
-    this.permissions.setPermissionsFor(domain, opts)
   }
 
   async selectAccountsFor (domain, opts) {
@@ -90,14 +86,14 @@ class PermissionsController {
         // json-rpc-engine middleware functions.
         'readYourProfile': {
           description: 'Read from your profile',
-          method: (req, res, next, end) => {
+          method: (_req, res, _next, end) => {
             res.result = this.testProfile
             end()
           },
         },
         'writeToYourProfile': {
           description: 'Write to your profile.',
-          method: (req, res, next, end) => {
+          method: (req, res, _next, end) => {
             const [ key, value ] = req.params
             this.testProfile[key] = value
             res.result = this.testProfile
@@ -116,7 +112,8 @@ class PermissionsController {
        * @param {string} req - The request object sent in to the `requestPermissions` method.
        * @returns {Promise<bool>} approved - Whether the user approves the request or not.
        */
-      requestUserApproval: async (metadata, opts) => {
+      requestUserApproval: async (options) => {
+        const { metadata } = options
         const { id } = metadata
 
         // const restricted = this.permissions.restrictedMethods

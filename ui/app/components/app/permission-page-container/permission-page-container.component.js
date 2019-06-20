@@ -43,15 +43,22 @@ export default class PermissionPageContainer extends Component {
 
   onSubmit = () => {
 
-    // some sanity validation
+    // sanity validation
     if (!this.state.selectedAccount) throw new Error(
       'Fatal: no account selected'
     )
 
     const { requests, approvePermissionsRequest } = this.props
     const id = requests[0].metadata.id
-    // TODO:5-27 make sure the correct account is passed forward
-    approvePermissionsRequest(id)
+
+    if ('eth_accounts' in requests[0].permissions) {
+      requests[0].permissions.eth_accounts = {
+        caveats: [
+          { type: 'filterResponse', value: [this.state.selectedAccount.address] },
+        ]
+      }
+    }
+    approvePermissionsRequest(requests[0])
   }
 
   onAccountSelect = selectedAccount => {
