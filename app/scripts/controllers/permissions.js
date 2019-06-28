@@ -8,6 +8,7 @@ class PermissionsController {
     this._openPopup = openPopup
     this._closePopup = closePopup
     this.getAccounts = getAccounts
+    this.exposedAccounts = {}
 
     this._initializePermissions(restoredState)
   }
@@ -17,7 +18,7 @@ class PermissionsController {
   }
 
   async approvePermissionsRequest (approved) {
-    const id = approved.metadata.id
+    const { id, origin } = approved.metadata
     const approval = this.pendingApprovals[id]
     const res = approval.res
     res(approved.permissions)
@@ -33,18 +34,7 @@ class PermissionsController {
     delete this.pendingApprovals[id]
   }
 
-  async selectAccountsFor (domain, opts) {
-    const accounts = await this.getAccounts()
-    const approved = accounts.filter(acct => confirm(`Would you like to reveal account ${acct}?`))
-    return {
-      caveats: [{
-        type: 'static',
-        value: approved,
-      }],
-    }
-  }
-
-   /*
+  /**
    * A convenience method for retrieving a login object
    * or creating a new one if needed.
    *
@@ -59,10 +49,10 @@ class PermissionsController {
 
     this.permissions = new RpcCap({
 
-       // Supports passthrough methods:
+      // Supports passthrough methods:
       safeMethods: SAFE_METHODS,
 
-       // optional prefix for internal methods
+      // optional prefix for internal methods
       methodPrefix: 'wallet_',
 
       restrictedMethods: {
@@ -73,7 +63,8 @@ class PermissionsController {
             this.getAccounts()
             .then((accounts) => {
               res.result = accounts
-              end()
+              // end()
+              next()
             })
             .catch((reason) => {
               res.error = reason

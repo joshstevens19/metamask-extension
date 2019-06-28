@@ -16,12 +16,10 @@ class ProviderApprovalController extends SafeEventEmitter {
    *
    * @param {Object} [config] - Options to configure controller
    */
-  constructor ({ closePopup, keyringController, openPopup, preferencesController } = {}) {
+  constructor ({ keyringController, preferencesController } = {}) {
     super()
     this.approvedOrigins = {}
-    this.closePopup = closePopup
     this.keyringController = keyringController
-    this.openPopup = openPopup
     this.preferencesController = preferencesController
     this.store = new ObservableStore({
       providerRequests: [],
@@ -36,7 +34,7 @@ class ProviderApprovalController extends SafeEventEmitter {
   createMiddleware ({ origin, getSiteMetadata }) {
     return createAsyncMiddleware(async (req, res, next) => {
       // only handle requestAccounts
-      if (req.method !== 'eth_requestAccounts') return next()
+      if (req.method !== 'eth_accounts') return next()
       // if already approved or privacy mode disabled, return early
       const isUnlocked = this.keyringController.memStore.getState().isUnlocked
       if (this.shouldExposeAccounts(origin) && isUnlocked) {
@@ -64,12 +62,13 @@ class ProviderApprovalController extends SafeEventEmitter {
    * @param {string} siteImage - The icon of the window requesting full provider access
    */
   _handleProviderRequest (origin, siteTitle, siteImage, force, tabID) {
-    this.store.updateState({ providerRequests: [{ origin, siteTitle, siteImage, tabID }] })
-    const isUnlocked = this.keyringController.memStore.getState().isUnlocked
-    if (!force && this.approvedOrigins[origin] && this.caching && isUnlocked) {
-      return
-    }
-    this.openPopup && this.openPopup()
+    this.approveProviderRequestByOrigin(origin) // now, if it gets here, it's golden
+    // this.store.updateState({ providerRequests: [{ origin, siteTitle, siteImage, tabID }] })
+    // const isUnlocked = this.keyringController.memStore.getState().isUnlocked
+    // if (!force && this.approvedOrigins[origin] && this.caching && isUnlocked) {
+    //   return
+    // }
+    // this.openPopup && this.openPopup()
   }
 
   /**
@@ -78,7 +77,7 @@ class ProviderApprovalController extends SafeEventEmitter {
    * @param {string} origin - origin of the domain that had provider access approved
    */
   approveProviderRequestByOrigin (origin) {
-    this.closePopup && this.closePopup()
+    // this.closePopup && this.closePopup()
     const requests = this.store.getState().providerRequests
     const providerRequests = requests.filter(request => request.origin !== origin)
     this.store.updateState({ providerRequests })
@@ -92,7 +91,7 @@ class ProviderApprovalController extends SafeEventEmitter {
    * @param {string} origin - origin of the domain that had provider access approved
    */
   rejectProviderRequestByOrigin (origin) {
-    this.closePopup && this.closePopup()
+    // this.closePopup && this.closePopup()
     const requests = this.store.getState().providerRequests
     const providerRequests = requests.filter(request => request.origin !== origin)
     this.store.updateState({ providerRequests })

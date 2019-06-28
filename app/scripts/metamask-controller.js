@@ -312,18 +312,26 @@ module.exports = class MetamaskController extends EventEmitter {
       version,
       // account mgmt
       getAccounts: async ({ origin }) => {
+
         // Expose no accounts if this origin has not been approved, preventing
         // account-requring RPC methods from completing successfully
         const exposeAccounts = this.providerApprovalController.shouldExposeAccounts(origin)
         if (origin !== 'MetaMask' && !exposeAccounts) { return [] }
         const isUnlocked = this.keyringController.memStore.getState().isUnlocked
         const selectedAddress = this.preferencesController.getSelectedAddress()
+
         // only show address if account is unlocked
         if (isUnlocked && selectedAddress) {
           return [selectedAddress]
         } else {
           return []
         }
+
+        // attempt with permissionsController
+        // if (
+        //   isUnlocked && selectedAddress &&
+        //   this.permissionsController.shouldExposeAccount(origin, selectedAddress)
+        // ) {
       },
       // tx signing
       processTransaction: this.newUnapprovedTransaction.bind(this),

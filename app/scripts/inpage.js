@@ -62,16 +62,57 @@ const inpageProvider = new MetamaskInpageProvider(metamaskStream)
 inpageProvider.setMaxListeners(100)
 
 // augment the provider with its enable method
-inpageProvider.enable = function ({ force } = {}) {
+inpageProvider.enableOld = function ({ force } = {}) {
   return new Promise((resolve, reject) => {
-    inpageProvider.sendAsync({ method: 'eth_requestAccounts', params: [force] }, (error, response) => {
-      if (error || response.error) {
-        reject(error || response.error)
-      } else {
-        resolve(response.result)
+    inpageProvider.sendAsync(
+      { method: 'eth_requestAccounts', params: [force] },
+      (error, response) => {
+        if (error || response.error) {
+          reject(error || response.error)
+        } else {
+          resolve(response.result)
+        }
       }
+    )
+  })
+}
+
+inpageProvider.enable = function (options) {
+  return new Promise((resolve, reject) => {
+    inpageProvider.sendAsync(
+      {
+        jsonrpc: '2.0',
+        method: 'wallet_requestPermissions',
+        params: [{ eth_accounts: {} }],
+      },
+      (error, response) => {
+        if (error || response.error) {
+          reject(error || response.error)
+        } else {
+          resolve(response.result)
+        }
+      }
+    )
+  })
+  .then(() => {
+    return new Promise((resolve, reject) => {
+      const force = { options }
+      inpageProvider.sendAsync(
+        {
+          method: 'eth_accounts',
+          params: [force]
+        },
+        (error, response) => {
+          if (error || response.error) {
+            reject(error || response.error)
+          } else {
+            resolve(response.result)
+          }
+        }
+      )
     })
   })
+  .catch(error => error)
 }
 
 // give the dapps control of a refresh they can toggle this off on the window.ethereum
