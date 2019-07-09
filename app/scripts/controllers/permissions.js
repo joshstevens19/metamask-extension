@@ -1,20 +1,134 @@
+
+const SafeEventEmitter = require('safe-event-emitter')
+const JsonRpcEngine = require('json-rpc-engine')
+const asMiddleware = require('json-rpc-engine/src/asMiddleware')
+const createAsyncMiddleware = require('json-rpc-engine/src/createAsyncMiddleware')
+const RpcCap = require('json-rpc-capabilities-middleware').CapabilitiesController
+const uuid = require('uuid/v4')
+
 // Methods that do not require any permissions to use:
 const SAFE_METHODS = require('../lib/permissions-safe-methods.json')
-const RpcCap = require('json-rpc-capabilities-middleware').CapabilitiesController
 
+const noop = () => {}
+
+// class PermissionsController extends SafeEventEmitter {
 class PermissionsController {
 
-  constructor ({ openPopup, closePopup, getAccounts } = {}, restoredState) {
+  constructor ({
+    openPopup, closePopup, keyringController
+  } = {}, restoredState) {
     this._openPopup = openPopup
     this._closePopup = closePopup
-    this.getAccounts = getAccounts
-    this.exposedAccounts = {}
-
+    this.keyringController = keyringController
     this._initializePermissions(restoredState)
+    this.engines = {} // { origin: middleware } map for selectedAddress compatibility
   }
 
   createMiddleware (options) {
-    return this.permissions.providerMiddlewareFunction.bind(this.permissions, options)
+    const { origin } = options
+    const engine = new JsonRpcEngine()
+    engine.push(this.createRequestMiddleware(options))
+    engine.push(this.permissions.providerMiddlewareFunction.bind(
+      this.permissions, { origin }
+    ))
+    this.engines[origin] = engine
+    return asMiddleware(engine)
+    // return this.permissions.providerMiddlewareFunction.bind(this.permissions, { origin })
+  }
+
+  /**
+     * Create middleware for preprocessing permissions requests.
+   * @param {origin: string, getSiteMetadata: function} options middleware options 
+   */
+  createRequestMiddleware ({ origin, getSiteMetadata }) {
+    return createAsyncMiddleware(async (req, res, next) => {
+
+      // backwards compatibility: treat eth_requestAccounts as eth_accounts
+      if (req.method === 'eth_requestAccounts') req.method = 'eth_accounts'
+
+      // terminate requests if MetaMask is not unlocked
+      if (!this.keyringController.memStore.getState().isUnlocked) {
+        if (req.method === 'eth_accounts') {
+          // eth_accounts returns empty array for backwards compatibility
+          res.result = []
+          return
+        }
+        // TODO:lps:review how handle?
+        // We want to terminate requests here, and this produces a "MetaMask - RPC Error"
+        // error on the web page, but I can't tell where the message comes from.
+        // The message is: "An unauthorized action was attempted."
+        res.error = { code: 1, message: 'Access denied.' } // this does not appear to go anywhere
+        return
+      }
+
+      // add metadata to permissions requests
+      if (
+        req.method === 'wallet_requestPermissions' &&
+        Array.isArray(req.params)
+      ) {
+
+        /**
+         * TODO:lps:review
+         * This is to ensure that the request's params array has a single item,
+         * the permissions array. We then (const metadata = { ... }) add a metadata
+         * parameter to the end of the params array, which is ultimately used in the UI
+         * to populate the popup with the site title and icon.
+         */
+        // some input validation
+        if (req.params.length !== 1) throw new Error('Bad request.')
+
+        // add unique id and site metadata to request params
+        const metadata = {
+          metadata: {
+            id: uuid(),
+            site: await getSiteMetadata(),
+          }
+        }
+        req.params.push(metadata)
+      }
+
+      return next()
+    })
+  }
+/**
+   * Returns whether accounts should be exposed.
+   * @param {string} origin 
+   */
+  async shouldExposeAccounts(origin) {
+    return new Promise((resolve, reject) => {
+      if (!this.engines[origin]) reject(new Error('Unknown origin.'))
+      this.engines[origin].handle(
+        { method: 'eth_accounts' },
+        (err, res) => {
+          if (err || res.error || !Array.isArray(res.result)) {
+            resolve(false)
+          } else {
+            resolve(true)
+          }
+        }
+      )
+    })
+  }
+
+  /**
+   * Returns the accounts that should be exposed for the given origin domain,
+   * if any.
+   * @param {string} origin 
+   */
+  async getAccounts(origin) {
+    return new Promise((resolve, reject) => {
+      if (!this.engines[origin]) reject(new Error('Unknown origin.'))
+      this.engines[origin].handle(
+        { method: 'eth_accounts' },
+        (err, res) => {
+          if (err || res.error || !Array.isArray(res.result)) {
+            resolve([])
+          } else {
+            resolve(res.result)
+          }
+        }
+      )
+    })
   }
 
   async approvePermissionsRequest (approved) {
@@ -60,11 +174,14 @@ class PermissionsController {
         'eth_accounts': {
           description: 'View Ethereum accounts',
           method: (req, res, next, end) => {
-            this.getAccounts()
+            this.keyringController.getAccounts()
             .then((accounts) => {
               res.result = accounts
-              // end()
-              next()
+              // TODO:lps:review
+              // This used to call next, but that does not produce the expected behavior.
+              // The only two subsequent middlewares (watchAsset and the primary provider)
+              // should have no work to complete at this point.
+              end()
             })
             .catch((reason) => {
               res.error = reason

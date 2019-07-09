@@ -61,23 +61,18 @@ const inpageProvider = new MetamaskInpageProvider(metamaskStream)
 // set a high max listener count to avoid unnecesary warnings
 inpageProvider.setMaxListeners(100)
 
-// augment the provider with its enable method
-inpageProvider.enableOld = function ({ force } = {}) {
-  return new Promise((resolve, reject) => {
-    inpageProvider.sendAsync(
-      { method: 'eth_requestAccounts', params: [force] },
-      (error, response) => {
-        if (error || response.error) {
-          reject(error || response.error)
-        } else {
-          resolve(response.result)
-        }
-      }
-    )
-  })
-}
+// augment the provider with its enable method, using the permissions
+// architecture
+inpageProvider.enable = function () {
 
-inpageProvider.enable = function (options) {
+  const promiseCallback = (resolve, reject) => (error, response) => {
+    if (error || response.error) {
+      reject(error || response.error)
+    } else {
+      resolve(response.result)
+    }
+  }
+
   return new Promise((resolve, reject) => {
     inpageProvider.sendAsync(
       {
@@ -85,30 +80,16 @@ inpageProvider.enable = function (options) {
         method: 'wallet_requestPermissions',
         params: [{ eth_accounts: {} }],
       },
-      (error, response) => {
-        if (error || response.error) {
-          reject(error || response.error)
-        } else {
-          resolve(response.result)
-        }
-      }
+      promiseCallback(resolve, reject)
     )
   })
   .then(() => {
     return new Promise((resolve, reject) => {
-      const force = { options }
       inpageProvider.sendAsync(
         {
           method: 'eth_accounts',
-          params: [force]
         },
-        (error, response) => {
-          if (error || response.error) {
-            reject(error || response.error)
-          } else {
-            resolve(response.result)
-          }
-        }
+        promiseCallback(resolve, reject)
       )
     })
   })

@@ -340,10 +340,6 @@ var actions = {
   createCancelTransaction,
   createSpeedUpTransaction,
 
-  approveProviderRequestByOrigin,
-  rejectProviderRequestByOrigin,
-  clearApprovedOrigins,
-
   // Permissions
   approvePermissionsRequest,
   rejectPermissionsRequest,
@@ -2604,24 +2600,6 @@ function setPendingTokens (pendingTokens) {
   }
 }
 
-function approveProviderRequestByOrigin (origin) {
-  return () => {
-    background.approveProviderRequestByOrigin(origin)
-  }
-}
-
-function rejectProviderRequestByOrigin (origin) {
-  return () => {
-    background.rejectProviderRequestByOrigin(origin)
-  }
-}
-
-function clearApprovedOrigins () {
-  return () => {
-    background.clearApprovedOrigins()
-  }
-}
-
 // Permissions
 
 /**
@@ -2643,6 +2621,22 @@ function rejectPermissionsRequest (requestId) {
     background.rejectPermissionsRequest(requestId)
   }
 }
+
+// TODO:lps:clearPermissions
+// function clearPermissions () {
+//   return () => {
+//     background.clearApprovedOrigins()
+//   }
+// }
+
+// old
+// function clearApprovedOrigins () {
+//   return () => {
+//     background.clearApprovedOrigins()
+//   }
+// }
+
+//
 
 function setFirstTimeFlowType (type) {
   return (dispatch) => {

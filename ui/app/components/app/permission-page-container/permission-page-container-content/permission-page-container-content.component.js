@@ -17,26 +17,24 @@ export default class PermissionPageContainerContent extends PureComponent {
 
   renderConnectVisual = () => {
     const { requests, selectedAccount, onAccountSelect } = this.props
-    const { origin, siteImage } = requests[0].metadata
+    const { origin, site } = requests[0].metadata
 
-    // TODO: Actually pass site title from contentscript with request.
-    const siteTitle = origin;
     const { t } = this.context
 
     return (
       <div className="permission-approval-visual">
         <section>
-          {siteImage ? (
+          {site.icon ? (
             <img
               className="permission-approval-visual__identicon"
-              src={siteImage}
+              src={site.icon}
             />
           ) : (
             <i className="permission-approval-visual__identicon--default">
-              {siteTitle.charAt(0).toUpperCase()}
+              {site.name.charAt(0).toUpperCase()}
             </i>
           )}
-          <h1>{t(siteTitle)}</h1>
+          <h1>{site.name}</h1>
           <h2>{origin}</h2>
         </section>
         <span className="permission-approval-visual__check" />
@@ -92,8 +90,7 @@ export default class PermissionPageContainerContent extends PureComponent {
 
   render () {
     const { requests } = this.props
-    const { origin } = requests[0].metadata
-    const { siteTitle } = origin
+    const { origin, site } = requests[0].metadata
     const { t } = this.context
 
     return (
@@ -102,7 +99,7 @@ export default class PermissionPageContainerContent extends PureComponent {
           <h2>{t('connectRequest')}</h2>
           {this.renderConnectVisual()}
           <section>
-            <h1>{t(siteTitle)}</h1>
+            <h1>{site.name}</h1>
             <h2>{'Would like to:'}</h2>
             {this.renderRequestedPermissions()}
             <br/>

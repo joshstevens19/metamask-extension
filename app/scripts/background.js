@@ -410,7 +410,6 @@ function setupController (initState, initLangCode) {
   controller.messageManager.on('updateBadge', updateBadge)
   controller.personalMessageManager.on('updateBadge', updateBadge)
   controller.typedMessageManager.on('updateBadge', updateBadge)
-  controller.providerApprovalController.store.on('update', updateBadge)
   controller.permissionsController.permissions.subscribe(updateBadge)
 
   /**
@@ -423,9 +422,8 @@ function setupController (initState, initLangCode) {
     const unapprovedMsgCount = controller.messageManager.unapprovedMsgCount
     const unapprovedPersonalMsgs = controller.personalMessageManager.unapprovedPersonalMsgCount
     const unapprovedTypedMsgs = controller.typedMessageManager.unapprovedTypedMessagesCount
-    const pendingProviderRequests = controller.providerApprovalController.store.getState().providerRequests.length
     const pendingPermissionRequests = Object.keys(controller.permissionsController.permissions.state.permissionsRequests).length
-    const count = unapprovedTxCount + unapprovedMsgCount + unapprovedPersonalMsgs + unapprovedTypedMsgs + pendingProviderRequests + pendingPermissionRequests
+    const count = unapprovedTxCount + unapprovedMsgCount + unapprovedPersonalMsgs + unapprovedTypedMsgs + pendingPermissionRequests
     if (count) {
       label = String(count)
     }

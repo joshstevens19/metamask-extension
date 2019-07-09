@@ -18,8 +18,8 @@ const debounce = require('debounce')
 const createEngineStream = require('json-rpc-middleware-stream/engineStream')
 const createFilterMiddleware = require('eth-json-rpc-filters')
 const createSubscriptionManager = require('eth-json-rpc-filters/subscriptionManager')
-const createOriginMiddleware = require('./lib/createOriginMiddleware')
 const createLoggerMiddleware = require('./lib/createLoggerMiddleware')
+const createOriginMiddleware = require('./lib/createOriginMiddleware')
 const providerAsMiddleware = require('eth-json-rpc-middleware/providerAsMiddleware')
 const {setupMultiplex} = require('./lib/stream-utils.js')
 const KeyringController = require('eth-keyring-controller')
@@ -36,7 +36,6 @@ const TransactionController = require('./controllers/transactions')
 const BalancesController = require('./controllers/computed-balances')
 const TokenRatesController = require('./controllers/token-rates')
 const DetectTokensController = require('./controllers/detect-tokens')
-const ProviderApprovalController = require('./controllers/provider-approval')
 const PermissionsController = require('./controllers/permissions')
 const nodeify = require('./lib/nodeify')
 const accountImporter = require('./account-import-strategies')
@@ -245,19 +244,10 @@ module.exports = class MetamaskController extends EventEmitter {
       this.isClientOpenAndUnlocked = memState.isUnlocked && this._isClientOpen
     })
 
-    this.providerApprovalController = new ProviderApprovalController({
-      closePopup: opts.closePopup,
+    this.permissionsController = new PermissionsController({
       keyringController: this.keyringController,
       openPopup: opts.openPopup,
-      preferencesController: this.preferencesController,
-    })
-
-    this.permissionsController = new PermissionsController({
-      openPopup: opts.openPopup,
       closePopup: opts.closePopup,
-      getAccounts: async () => {
-        return this.keyringController.getAccounts()
-      }
     },
     // TOOD: Persist/restore state here:
     {})
@@ -294,7 +284,6 @@ module.exports = class MetamaskController extends EventEmitter {
       CurrencyController: this.currencyRateController,
       ShapeshiftController: this.shapeshiftController,
       InfuraController: this.infuraController.store,
-      ProviderApprovalController: this.providerApprovalController.store,
       PermissionsController: this.permissionsController.permissions,
     })
     this.memStore.subscribe(this.sendUpdate.bind(this))
@@ -312,26 +301,17 @@ module.exports = class MetamaskController extends EventEmitter {
       version,
       // account mgmt
       getAccounts: async ({ origin }) => {
-
-        // Expose no accounts if this origin has not been approved, preventing
-        // account-requring RPC methods from completing successfully
-        const exposeAccounts = this.providerApprovalController.shouldExposeAccounts(origin)
-        if (origin !== 'MetaMask' && !exposeAccounts) { return [] }
         const isUnlocked = this.keyringController.memStore.getState().isUnlocked
         const selectedAddress = this.preferencesController.getSelectedAddress()
-
-        // only show address if account is unlocked
-        if (isUnlocked && selectedAddress) {
-          return [selectedAddress]
-        } else {
-          return []
+        if (isUnlocked) {
+          // TODO:lps:review how does this work? I only saw the github.io domain show up in requests
+          // Also, what calls this method?
+          if ((origin === 'MetaMask' || origin === 'metamask.github.io') && selectedAddress) {
+            console.warn('Passing through request from: ${origin}')
+            return [selectedAddress]
+          } else return await this.permissionsController.getAccounts(origin)
         }
-
-        // attempt with permissionsController
-        // if (
-        //   isUnlocked && selectedAddress &&
-        //   this.permissionsController.shouldExposeAccount(origin, selectedAddress)
-        // ) {
+        return []
       },
       // tx signing
       processTransaction: this.newUnapprovedTransaction.bind(this),
@@ -363,23 +343,26 @@ module.exports = class MetamaskController extends EventEmitter {
     }
 
     function updatePublicConfigStore (memState) {
-      const publicState = selectPublicState(memState)
-      publicConfigStore.putState(publicState)
+      // const publicState = selectPublicState(memState)
+      // publicConfigStore.putState(publicState)
+      selectPublicState(memState).then(publicState => {
+        publicConfigStore.putState(publicState)
+      })
     }
 
-    function selectPublicState ({ isUnlocked, selectedAddress, network, completedOnboarding }) {
-      const isEnabled = checkIsEnabled()
-      const isReady = isUnlocked && isEnabled
+    async function selectPublicState ({
+      isUnlocked, selectedAddress, network, completedOnboarding
+    }) {
+      const isEnabled = await checkIsEnabled()
       const result = {
         isUnlocked,
         isEnabled,
-        selectedAddress: isReady ? selectedAddress : undefined,
+        selectedAddress: isUnlocked && isEnabled ? selectedAddress : undefined,
         networkVersion: network,
         onboardingcomplete: completedOnboarding,
       }
       return result
     }
-
     return publicConfigStore
   }
 
@@ -418,7 +401,6 @@ module.exports = class MetamaskController extends EventEmitter {
     const preferencesController = this.preferencesController
     const txController = this.txController
     const networkController = this.networkController
-    const providerApprovalController = this.providerApprovalController
 
     return {
       // etc
@@ -514,11 +496,6 @@ module.exports = class MetamaskController extends EventEmitter {
       // personalMessageManager
       signTypedMessage: nodeify(this.signTypedMessage, this),
       cancelTypedMessage: this.cancelTypedMessage.bind(this),
-
-      // provider approval
-      approveProviderRequestByOrigin: providerApprovalController.approveProviderRequestByOrigin.bind(providerApprovalController),
-      rejectProviderRequestByOrigin: providerApprovalController.rejectProviderRequestByOrigin.bind(providerApprovalController),
-      clearApprovedOrigins: providerApprovalController.clearApprovedOrigins.bind(providerApprovalController),
 
       // permissions
       approvePermissionsRequest: nodeify(this.permissionsController.approvePermissionsRequest, this.permissionsController),
@@ -1420,21 +1397,21 @@ module.exports = class MetamaskController extends EventEmitter {
     const subscriptionManager = createSubscriptionManager({ provider, blockTracker })
     subscriptionManager.events.on('notification', (message) => engine.emit('notification', message))
 
-    // metadata
+    // append origin to each request
     engine.push(createOriginMiddleware({ origin }))
+    // logging
     engine.push(createLoggerMiddleware({ origin }))
     // filter and subscription polyfills
     engine.push(filterMiddleware)
     engine.push(subscriptionManager.middleware)
     // permissions
-    engine.push(this.permissionsController.createMiddleware({ origin }))
-    // watch asset
-    engine.push(this.preferencesController.requestWatchAsset.bind(this.preferencesController))
-    // requestAccounts
-    engine.push(this.providerApprovalController.createMiddleware({
+    engine.push(this.permissionsController.createMiddleware({
       origin,
       getSiteMetadata,
     }))
+    // watch asset
+    engine.push(this.preferencesController.requestWatchAsset.bind(this.preferencesController))
+
     // forward to metamask primary provider
     engine.push(providerAsMiddleware(provider))
     return engine
@@ -1452,8 +1429,8 @@ module.exports = class MetamaskController extends EventEmitter {
    */
   setupPublicConfig (outStream, originDomain) {
     const configStore = this.createPublicConfigStore({
-      // check the providerApprovalController's approvedOrigins
-      checkIsEnabled: () => this.providerApprovalController.shouldExposeAccounts(originDomain),
+      // check using permissionsController
+      checkIsEnabled: async () => this.permissionsController.shouldExposeAccounts(originDomain),
     })
     const configStream = asStream(configStore)
 
