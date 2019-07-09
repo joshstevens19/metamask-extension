@@ -18,22 +18,22 @@
     "message": "Are you sure you want to expose your accounts to the current website?"
   },
   "confirmClear": {
-    "message": "Are you sure you want to clear approved websites?"
+    "message": "Are you sure you want to remove all dapp/website permissions?"
   },
   "contractInteraction": {
     "message": "Contract Interaction"
   },
   "clearApprovalDataSuccess": {
-    "message": "Approved website data cleared successfully."
+    "message": "Dapp/website permissions cleared successfully."
   },
   "approvalData": {
-    "message": "Privacy Data"
+    "message": "Dapp/Website Permissions"
   },
   "approvalDataDescription": {
-    "message": "Clear privacy data so all websites must request access to view account information again."
+    "message": "Clear permissions so all dapps/websites must request access again."
   },
   "clearApprovalData": {
-    "message": "Clear Privacy Data"
+    "message": "Clear Permissions"
   },
   "reject": {
     "message": "Reject"

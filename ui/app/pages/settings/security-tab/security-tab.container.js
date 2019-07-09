@@ -31,7 +31,7 @@ const mapDispatchToProps = dispatch => {
     displayWarning: warning => dispatch(displayWarning(warning)),
     revealSeedConfirmation: () => dispatch(revealSeedConfirmation()),
     setPrivacyMode: enabled => dispatch(setFeatureFlag('privacyMode', enabled)),
-    showClearApprovalModal: () => dispatch(showModal({ name: 'CLEAR_APPROVED_ORIGINS' })),
+    showClearApprovalModal: () => dispatch(showModal({ name: 'CLEAR_PERMISSIONS' })),
     setParticipateInMetaMetrics: (val) => dispatch(setParticipateInMetaMetrics(val)),
   }
 }

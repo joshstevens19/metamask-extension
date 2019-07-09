@@ -1,5 +1,3 @@
-
-const SafeEventEmitter = require('safe-event-emitter')
 const JsonRpcEngine = require('json-rpc-engine')
 const asMiddleware = require('json-rpc-engine/src/asMiddleware')
 const createAsyncMiddleware = require('json-rpc-engine/src/createAsyncMiddleware')
@@ -8,8 +6,6 @@ const uuid = require('uuid/v4')
 
 // Methods that do not require any permissions to use:
 const SAFE_METHODS = require('../lib/permissions-safe-methods.json')
-
-const noop = () => {}
 
 // class PermissionsController extends SafeEventEmitter {
 class PermissionsController {
@@ -96,7 +92,8 @@ class PermissionsController {
    */
   async shouldExposeAccounts(origin) {
     return new Promise((resolve, reject) => {
-      if (!this.engines[origin]) reject(new Error('Unknown origin.'))
+      // TODO:lps:review how handle? This will happen when permissions are cleared
+      if (!this.engines[origin]) reject(new Error('Unknown origin: ${origin}'))
       this.engines[origin].handle(
         { method: 'eth_accounts' },
         (err, res) => {
@@ -117,7 +114,8 @@ class PermissionsController {
    */
   async getAccounts(origin) {
     return new Promise((resolve, reject) => {
-      if (!this.engines[origin]) reject(new Error('Unknown origin.'))
+      // TODO:lps:review how handle? This will happen when permissions are cleared
+      if (!this.engines[origin]) reject(new Error('Unknown origin: ${origin}'))
       this.engines[origin].handle(
         { method: 'eth_accounts' },
         (err, res) => {
@@ -131,6 +129,20 @@ class PermissionsController {
     })
   }
 
+  /**
+   * Removes all known domains their related permissions.
+   */
+  clearPermissions() {
+    this.permissions.clearDomains()
+    Object.keys(this.engines).forEach(s => {
+      delete this.engines[s]
+    })
+  }
+
+  /**
+   * User approval callback.
+   * @param {object} approved the approved request object
+   */
   async approvePermissionsRequest (approved) {
     const { id, origin } = approved.metadata
     const approval = this.pendingApprovals[id]
@@ -140,6 +152,10 @@ class PermissionsController {
     delete this.pendingApprovals[id]
   }
 
+  /**
+   * User rejection callback.
+   * @param {string} id the id of the rejected request
+   */
   async rejectPermissionsRequest (id) {
     const approval = this.pendingApprovals[id]
     const rej = approval.rej
@@ -224,10 +240,6 @@ class PermissionsController {
         const { metadata } = options
         const { id } = metadata
 
-        // const restricted = this.permissions.restrictedMethods
-        // const descriptions = Object.keys(opts).map(method => restricted[method].description)
-
-        // const message = `The site ${siteTitle} at ${origin} would like permission to:\n - ${descriptions.join('\n- ')}`
         this._openPopup && this._openPopup()
 
         return new Promise((res, rej) => {
@@ -236,7 +248,7 @@ class PermissionsController {
         // TODO: This should be persisted/restored state.
         {})
 
-         // TODO: Attenuate requested permissions in approval screen.
+        // TODO: Attenuate requested permissions in approval screen.
         // Like selecting the account to display.
       },
     }, restoredState)
