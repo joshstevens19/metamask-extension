@@ -7,7 +7,7 @@ import AccountDropdownMini from './account-dropdown-mini.component'
 // import actions from '../../actions'
 
 import {
-  getCurrentAccountWithSendEtherInfo,
+  // getCurrentAccountWithSendEtherInfo,
   accountsWithSendEtherInfoSelector,
 } from '../../../selectors/selectors'
 

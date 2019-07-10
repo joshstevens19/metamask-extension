@@ -19,7 +19,7 @@ export default class PermissionPageContainerContent extends PureComponent {
     const { requests, selectedAccount, onAccountSelect } = this.props
     const { origin, site } = requests[0].metadata
 
-    const { t } = this.context
+    // const { t } = this.context
 
     return (
       <div className="permission-approval-visual">
@@ -57,12 +57,12 @@ export default class PermissionPageContainerContent extends PureComponent {
   renderRequestedPermissions () {
     const { requests, permissionsDescriptions } = this.props
 
-    const request = requests[0];
+    const request = requests[0]
 
     const requestedMethods = Object.keys(request.permissions)
 
     const items = requestedMethods.map((methodName) => {
-      const req = request.permissions[methodName];
+
       const matchingFuncs = permissionsDescriptions.filter((perm) => {
         return perm.method === methodName
       })
@@ -90,7 +90,7 @@ export default class PermissionPageContainerContent extends PureComponent {
 
   render () {
     const { requests } = this.props
-    const { origin, site } = requests[0].metadata
+    const { site } = requests[0].metadata
     const { t } = this.context
 
     return (

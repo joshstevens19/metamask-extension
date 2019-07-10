@@ -11,7 +11,7 @@ const SAFE_METHODS = require('../lib/permissions-safe-methods.json')
 class PermissionsController {
 
   constructor ({
-    openPopup, closePopup, keyringController
+    openPopup, closePopup, keyringController,
   } = {}, restoredState) {
     this._openPopup = openPopup
     this._closePopup = closePopup
@@ -34,9 +34,9 @@ class PermissionsController {
 
   /**
      * Create middleware for preprocessing permissions requests.
-   * @param {origin: string, getSiteMetadata: function} options middleware options 
+   * @param {origin: string, getSiteMetadata: function} options middleware options
    */
-  createRequestMiddleware ({ origin, getSiteMetadata }) {
+  createRequestMiddleware ({ getSiteMetadata }) {
     return createAsyncMiddleware(async (req, res, next) => {
 
       // backwards compatibility: treat eth_requestAccounts as eth_accounts
@@ -78,7 +78,7 @@ class PermissionsController {
           metadata: {
             id: uuid(),
             site: await getSiteMetadata(),
-          }
+          },
         }
         req.params.push(metadata)
       }
@@ -88,9 +88,9 @@ class PermissionsController {
   }
 /**
    * Returns whether accounts should be exposed.
-   * @param {string} origin 
+   * @param {string} origin
    */
-  async shouldExposeAccounts(origin) {
+  async shouldExposeAccounts (origin) {
     return new Promise((resolve, reject) => {
       // TODO:lps:review how handle? This will happen when permissions are cleared
       if (!this.engines[origin]) reject(new Error('Unknown origin: ${origin}'))
@@ -110,9 +110,9 @@ class PermissionsController {
   /**
    * Returns the accounts that should be exposed for the given origin domain,
    * if any.
-   * @param {string} origin 
+   * @param {string} origin
    */
-  async getAccounts(origin) {
+  async getAccounts (origin) {
     return new Promise((resolve, reject) => {
       // TODO:lps:review how handle? This will happen when permissions are cleared
       if (!this.engines[origin]) reject(new Error('Unknown origin: ${origin}'))
@@ -132,7 +132,7 @@ class PermissionsController {
   /**
    * Removes all known domains their related permissions.
    */
-  clearPermissions() {
+  clearPermissions () {
     this.permissions.clearDomains()
     Object.keys(this.engines).forEach(s => {
       delete this.engines[s]
@@ -144,7 +144,7 @@ class PermissionsController {
    * @param {object} approved the approved request object
    */
   async approvePermissionsRequest (approved) {
-    const { id, origin } = approved.metadata
+    const { id } = approved.metadata
     const approval = this.pendingApprovals[id]
     const res = approval.res
     res(approved.permissions)
@@ -189,7 +189,7 @@ class PermissionsController {
 
         'eth_accounts': {
           description: 'View Ethereum accounts',
-          method: (req, res, next, end) => {
+          method: (_, res, __, end) => {
             this.keyringController.getAccounts()
             .then((accounts) => {
               res.result = accounts

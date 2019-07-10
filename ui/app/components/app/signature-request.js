@@ -93,7 +93,7 @@ module.exports = compose(
 
 inherits(SignatureRequest, Component)
 
-function SignatureRequest (props) {
+function SignatureRequest (_) {
   Component.call(this)
 }
 

@@ -2605,7 +2605,7 @@ function setPendingTokens (pendingTokens) {
 
 /**
  * Approves the permission requests with the given IDs.
- * @param {Array} requestId 
+ * @param {Array} requestId
  */
 function approvePermissionsRequest (requestId) {
   return () => {
@@ -2615,7 +2615,7 @@ function approvePermissionsRequest (requestId) {
 
 /**
  * Rejects the permission requests with the given IDs.
- * @param {Array} requestId 
+ * @param {Array} requestId
  */
 function rejectPermissionsRequest (requestId) {
   return () => {
@@ -2632,7 +2632,7 @@ function clearPermissions () {
   }
 }
 
-//////
+// ////
 
 function setFirstTimeFlowType (type) {
   return (dispatch) => {
