@@ -104,7 +104,7 @@
     "gaba": "^1.4.1",
     "human-standard-token-abi": "^2.0.0",
     "jazzicon": "^1.2.0",
-    "json-rpc-capabilities-middleware": "^0.14.7",
+    "json-rpc-capabilities-middleware": "file:development/json-rpc-capabilities-middleware-0.14.7.tgz",
     "json-rpc-engine": "^4.0.0",
     "json-rpc-middleware-stream": "^2.1.1",
     "jsonschema": "^1.2.4",
