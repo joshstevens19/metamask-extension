@@ -74,7 +74,6 @@ initialize().catch(log.error)
 // setup metamask mesh testing container
 setupMetamaskMeshMetrics()
 
-
 /**
  * An object representing a transaction, in whatever state it is in.
  * @typedef TransactionMeta

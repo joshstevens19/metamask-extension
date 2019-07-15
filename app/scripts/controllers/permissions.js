@@ -39,13 +39,13 @@ class PermissionsController {
   createRequestMiddleware ({ getSiteMetadata }) {
     return createAsyncMiddleware(async (req, res, next) => {
 
-      // backwards compatibility: treat eth_requestAccounts as eth_accounts
-      if (req.method === 'eth_requestAccounts') req.method = 'eth_accounts'
+      // backwards compatibility: eth_accounts -> eth_requestAccounts (EIP-1102)
+      if (req.method === 'eth_accounts') req.method = 'eth_requestAccounts'
 
       // terminate requests if MetaMask is not unlocked
       if (!this.keyringController.memStore.getState().isUnlocked) {
-        if (req.method === 'eth_accounts') {
-          // eth_accounts returns empty array for backwards compatibility
+        if (req.method === 'eth_requestAccounts') {
+          // eth_requestAccounts returns empty array for backwards compatibility
           res.result = []
           return
         }
@@ -71,7 +71,17 @@ class PermissionsController {
          * to populate the popup with the site title and icon.
          */
         // some input validation
-        if (req.params.length !== 1) throw new Error('Bad request.')
+        if (
+          req.params.length !== 1 ||
+          Array.isArray(req.params[0]) ||
+          Object.keys(req.params[0]).length < 1
+        ) throw new Error('Bad request.')
+
+        // backwards compatibility, eth_accounts -> eth_requestAccounts (EIP-1102)
+        if (req.params[0].eth_accounts) {
+          req.params[0].eth_requestAccounts = req.params[0].eth_accounts
+          delete req.params[0].eth_accounts
+        }
 
         // add unique id and site metadata to request params
         const metadata = {
@@ -86,26 +96,6 @@ class PermissionsController {
       return next()
     })
   }
-/**
-   * Returns whether accounts should be exposed.
-   * @param {string} origin
-   */
-  async shouldExposeAccounts (origin) {
-    return new Promise((resolve, reject) => {
-      // TODO:lps:review how handle? This will happen when permissions are cleared
-      if (!this.engines[origin]) reject(new Error('Unknown origin: ${origin}'))
-      this.engines[origin].handle(
-        { method: 'eth_accounts' },
-        (err, res) => {
-          if (err || res.error || !Array.isArray(res.result)) {
-            resolve(false)
-          } else {
-            resolve(true)
-          }
-        }
-      )
-    })
-  }
 
   /**
    * Returns the accounts that should be exposed for the given origin domain,
@@ -117,7 +107,7 @@ class PermissionsController {
       // TODO:lps:review how handle? This will happen when permissions are cleared
       if (!this.engines[origin]) reject(new Error('Unknown origin: ${origin}'))
       this.engines[origin].handle(
-        { method: 'eth_accounts' },
+        { method: 'eth_requestAccounts' },
         (err, res) => {
           if (err || res.error || !Array.isArray(res.result)) {
             resolve([])
@@ -187,7 +177,7 @@ class PermissionsController {
 
       restrictedMethods: {
 
-        'eth_accounts': {
+        'eth_requestAccounts': {
           description: 'View Ethereum accounts',
           method: (_, res, __, end) => {
             this.keyringController.getAccounts()

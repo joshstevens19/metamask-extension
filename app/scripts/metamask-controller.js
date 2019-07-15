@@ -301,17 +301,16 @@ module.exports = class MetamaskController extends EventEmitter {
       version,
       // account mgmt
       getAccounts: async ({ origin }) => {
-        const isUnlocked = this.keyringController.memStore.getState().isUnlocked
-        const selectedAddress = this.preferencesController.getSelectedAddress()
-        if (isUnlocked) {
-          // TODO:lps:review how does this work? I only saw the github.io domain show up in requests
-          // Also, what calls this method?
-          if ((origin === 'MetaMask' || origin === 'metamask.github.io') && selectedAddress) {
-            console.warn('Passing through request from: ${origin}')
-            return [selectedAddress]
-          } else return await this.permissionsController.getAccounts(origin)
-        }
-        return []
+        // log.debug('__TEST__\ngetAccounts from: ' + origin)
+        // const isUnlocked = this.keyringController.memStore.getState().isUnlocked
+        // const selectedAddress = this.preferencesController.getSelectedAddress()
+        // if (isUnlocked) {
+        //   if (origin === 'MetaMask' && selectedAddress) {
+        //     return [selectedAddress]
+        //   } else return await this.permissionsController.getAccounts(origin)
+        // }
+        // return []
+        throw new Error('KAPLAAAAAH')
       },
       // tx signing
       processTransaction: this.newUnapprovedTransaction.bind(this),
@@ -330,7 +329,7 @@ module.exports = class MetamaskController extends EventEmitter {
    * Constructor helper: initialize a public config store.
    * This store is used to make some config info available to Dapps synchronously.
    */
-  createPublicConfigStore ({ checkIsEnabled }) {
+  createPublicConfigStore () {
     // subset of state for metamask inpage provider
     const publicConfigStore = new ObservableStore()
 
@@ -343,23 +342,21 @@ module.exports = class MetamaskController extends EventEmitter {
     }
 
     function updatePublicConfigStore (memState) {
-      // const publicState = selectPublicState(memState)
-      // publicConfigStore.putState(publicState)
       selectPublicState(memState).then(publicState => {
         publicConfigStore.putState(publicState)
       })
     }
 
     async function selectPublicState ({
-      isUnlocked, selectedAddress, network, completedOnboarding,
+      isUnlocked, completedOnboarding,
+      // selectedAddress, network
     }) {
-      const isEnabled = await checkIsEnabled()
       const result = {
         isUnlocked,
-        isEnabled,
-        selectedAddress: isUnlocked && isEnabled ? selectedAddress : undefined,
-        networkVersion: network,
         onboardingcomplete: completedOnboarding,
+        // TODO:synchronous re-implement
+        // selectedAddress: isUnlocked && isEnabled ? selectedAddress : undefined,
+        // networkVersion: network,
       }
       return result
     }
@@ -1286,7 +1283,7 @@ module.exports = class MetamaskController extends EventEmitter {
     // connect features
     const publicApi = this.setupPublicApi(mux.createStream('publicApi'), originDomain)
     this.setupProviderConnection(mux.createStream('provider'), originDomain, publicApi)
-    this.setupPublicConfig(mux.createStream('publicConfig'), originDomain)
+    this.setupPublicConfig(mux.createStream('publicConfig'))
   }
 
   /**
@@ -1428,11 +1425,8 @@ module.exports = class MetamaskController extends EventEmitter {
    *
    * @param {*} outStream - The stream to provide public config over.
    */
-  setupPublicConfig (outStream, originDomain) {
-    const configStore = this.createPublicConfigStore({
-      // check using permissionsController
-      checkIsEnabled: async () => this.permissionsController.shouldExposeAccounts(originDomain),
-    })
+  setupPublicConfig (outStream) {
+    const configStore = this.createPublicConfigStore({})
     const configStream = asStream(configStore)
 
     pump(
