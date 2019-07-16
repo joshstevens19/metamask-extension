@@ -52,8 +52,8 @@ export default class PermissionPageContainer extends Component {
 
     const { requests, approvePermissionsRequest } = this.props
 
-    if ('eth_requestAccounts' in requests[0].permissions) {
-      requests[0].permissions.eth_requestAccounts = {
+    if ('eth_accounts' in requests[0].permissions) {
+      requests[0].permissions.eth_accounts = {
         caveats: [
           { type: 'filterResponse', value: [this.state.selectedAccount.address] },
         ],

@@ -17,7 +17,8 @@ class PermissionsController {
     this._closePopup = closePopup
     this.keyringController = keyringController
     this._initializePermissions(restoredState)
-    this.engines = {} // { origin: middleware } map for selectedAddress compatibility
+    // TODO:deprecate ?
+    this.engines = {}
   }
 
   createMiddleware (options) {
@@ -29,7 +30,6 @@ class PermissionsController {
     ))
     this.engines[origin] = engine
     return asMiddleware(engine)
-    // return this.permissions.providerMiddlewareFunction.bind(this.permissions, { origin })
   }
 
   /**
@@ -38,51 +38,26 @@ class PermissionsController {
   createRequestMiddleware () {
     return createAsyncMiddleware(async (req, res, next) => {
 
-      // backwards compatibility: eth_accounts -> eth_requestAccounts (EIP-1102)
-      if (req.method === 'eth_accounts') req.method = 'eth_requestAccounts'
-
-      // terminate requests if MetaMask is not unlocked
+      // TODO:7-16 this should wait for unlock, regardless of method \o/
       if (!this.keyringController.memStore.getState().isUnlocked) {
-        if (req.method === 'eth_requestAccounts') {
-          // eth_requestAccounts returns empty array for backwards compatibility
-          res.result = []
-          return
-        }
-        // TODO:lps:review how handle?
-        // We want to terminate requests here, and this produces a "MetaMask - RPC Error"
-        // error on the web page, but I can't tell where the message comes from.
-        // The message is: "An unauthorized action was attempted."
         res.error = { code: 1, message: 'Access denied.' } // this does not appear to go anywhere
         return
       }
 
-      // add metadata to permissions requests
+      // validate and add metadata to permissions requests
       if (
         req.method === 'wallet_requestPermissions' &&
         Array.isArray(req.params)
       ) {
 
-        /**
-         * TODO:lps:review
-         * This is to ensure that the request's params array has a single item,
-         * the permissions array. We then (const metadata = { ... }) add a metadata
-         * parameter to the end of the params array, which is ultimately used in the UI
-         * to populate the popup with the site title and icon.
-         */
-        // some input validation
         if (
           req.params.length !== 1 ||
           Array.isArray(req.params[0]) ||
           Object.keys(req.params[0]).length < 1
         ) throw new Error('Bad request.')
 
-        // backwards compatibility, eth_accounts -> eth_requestAccounts (EIP-1102)
-        if (req.params[0].eth_accounts) {
-          req.params[0].eth_requestAccounts = req.params[0].eth_accounts
-          delete req.params[0].eth_accounts
-        }
-
-        // add unique id and site metadata to request params
+        // add unique id and site metadata to request params, as expected by
+        // json-rpc-capabilities-middleware
         const metadata = {
           metadata: {
             id: uuid(),
@@ -100,6 +75,7 @@ class PermissionsController {
     })
   }
 
+  // TODO:deprecate ?
   /**
    * Returns the accounts that should be exposed for the given origin domain,
    * if any.
@@ -110,7 +86,7 @@ class PermissionsController {
       // TODO:lps:review how handle? This will happen when permissions are cleared
       if (!this.engines[origin]) reject(new Error('Unknown origin: ${origin}'))
       this.engines[origin].handle(
-        { method: 'eth_requestAccounts' },
+        { method: 'eth_accounts' },
         (err, res) => {
           if (err || res.error || !Array.isArray(res.result)) {
             resolve([])
@@ -180,7 +156,7 @@ class PermissionsController {
 
       restrictedMethods: {
 
-        'eth_requestAccounts': {
+        'eth_accounts': {
           description: 'View Ethereum accounts',
           method: (_, res, __, end) => {
             this.keyringController.getAccounts()
