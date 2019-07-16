@@ -7,10 +7,8 @@
 const EventEmitter = require('events')
 const pump = require('pump')
 const Dnode = require('dnode')
-const pify = require('pify')
 const ObservableStore = require('obs-store')
 const ComposableObservableStore = require('./lib/ComposableObservableStore')
-const createDnodeRemoteGetter = require('./lib/createDnodeRemoteGetter')
 const asStream = require('obs-store/lib/asStream')
 const AccountTracker = require('./lib/account-tracker')
 const RpcEngine = require('json-rpc-engine')
@@ -1281,8 +1279,7 @@ module.exports = class MetamaskController extends EventEmitter {
     // setup multiplexing
     const mux = setupMultiplex(connectionStream)
     // connect features
-    const publicApi = this.setupPublicApi(mux.createStream('publicApi'), originDomain)
-    this.setupProviderConnection(mux.createStream('provider'), originDomain, publicApi)
+    this.setupProviderConnection(mux.createStream('provider'), originDomain)
     this.setupPublicConfig(mux.createStream('publicConfig'))
   }
 
@@ -1356,9 +1353,8 @@ module.exports = class MetamaskController extends EventEmitter {
    * @param {*} outStream - The stream to provide over.
    * @param {string} origin - The URI of the requesting resource.
    */
-  setupProviderConnection (outStream, origin, publicApi) {
-    const getSiteMetadata = publicApi && publicApi.getSiteMetadata
-    const engine = this.setupProviderEngine(origin, getSiteMetadata)
+  setupProviderConnection (outStream, origin) {
+    const engine = this.setupProviderEngine(origin)
 
     // setup connection
     const providerStream = createEngineStream({ engine })
@@ -1382,7 +1378,7 @@ module.exports = class MetamaskController extends EventEmitter {
   /**
    * A method for creating a provider that is safely restricted for the requesting domain.
    **/
-  setupProviderEngine (origin, getSiteMetadata) {
+  setupProviderEngine (origin) {
     // setup json rpc engine stack
     const engine = new RpcEngine()
     const provider = this.provider
@@ -1403,10 +1399,7 @@ module.exports = class MetamaskController extends EventEmitter {
     engine.push(filterMiddleware)
     engine.push(subscriptionManager.middleware)
     // permissions
-    engine.push(this.permissionsController.createMiddleware({
-      origin,
-      getSiteMetadata,
-    }))
+    engine.push(this.permissionsController.createMiddleware({ origin }))
     // watch asset
     engine.push(this.preferencesController.requestWatchAsset.bind(this.preferencesController))
 
@@ -1438,38 +1431,6 @@ module.exports = class MetamaskController extends EventEmitter {
         if (err) log.error(err)
       }
     )
-  }
-
-  /**
-   * A method for providing our public api over a stream.
-   * This includes a method for setting site metadata like title and image
-   *
-   * @param {*} outStream - The stream to provide the api over.
-   */
-  setupPublicApi (outStream) {
-    const dnode = Dnode()
-    // connect dnode api to remote connection
-    pump(
-      outStream,
-      dnode,
-      outStream,
-      (err) => {
-        // report any error
-        if (err) log.error(err)
-      }
-    )
-
-    const getRemote = createDnodeRemoteGetter(dnode)
-
-    const publicApi = {
-      // wrap with an await remote
-      getSiteMetadata: async () => {
-        const remote = await getRemote()
-        return await pify(remote.getSiteMetadata)()
-      },
-    }
-
-    return publicApi
   }
 
   /**

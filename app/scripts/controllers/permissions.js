@@ -33,10 +33,9 @@ class PermissionsController {
   }
 
   /**
-     * Create middleware for preprocessing permissions requests.
-   * @param {origin: string, getSiteMetadata: function} options middleware options
+   * Create middleware for preprocessing permissions requests.
    */
-  createRequestMiddleware ({ getSiteMetadata }) {
+  createRequestMiddleware () {
     return createAsyncMiddleware(async (req, res, next) => {
 
       // backwards compatibility: eth_accounts -> eth_requestAccounts (EIP-1102)
@@ -87,7 +86,11 @@ class PermissionsController {
         const metadata = {
           metadata: {
             id: uuid(),
-            site: await getSiteMetadata(),
+            site: (
+              req._siteMetadata
+              ? req._siteMetadata
+              : { name: null, icon: null }
+            ),
           },
         }
         req.params.push(metadata)
