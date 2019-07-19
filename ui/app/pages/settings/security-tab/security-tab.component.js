@@ -14,7 +14,6 @@ export default class SecurityTab extends PureComponent {
   static propTypes = {
     displayWarning: PropTypes.func,
     revealSeedConfirmation: PropTypes.func,
-    showClearApprovalModal: PropTypes.func,
     warning: PropTypes.string,
     history: PropTypes.object,
     mobileSync: PropTypes.bool,
@@ -50,36 +49,6 @@ export default class SecurityTab extends PureComponent {
               }}
             >
               { t('downloadStateLogs') }
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  renderClearApproval () {
-    const { t } = this.context
-    const { showClearApprovalModal } = this.props
-    return (
-      <div className="settings-page__content-row">
-        <div className="settings-page__content-item">
-          <span>{ t('approvalData') }</span>
-          <span className="settings-page__content-description">
-            { t('approvalDataDescription') }
-          </span>
-        </div>
-        <div className="settings-page__content-item">
-          <div className="settings-page__content-item-col">
-            <Button
-              type="warning"
-              large
-              className="settings-tab__button--orange"
-              onClick={event => {
-                event.preventDefault()
-                showClearApprovalModal()
-              }}
-            >
-              { t('clearApprovalData') }
             </Button>
           </div>
         </div>
@@ -153,7 +122,6 @@ export default class SecurityTab extends PureComponent {
     return (
       <div className="settings-page__body">
         { warning && <div className="settings-tab__error">{ warning }</div> }
-        { this.renderClearApproval() }
         { this.renderSeedWords() }
         { this.renderMetaMetricsOptIn() }
       </div>

@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
+import equal from 'fast-deep-equal'
 import { PermissionPageContainerContent, PermissionPageContainerHeader } from '.'
 import { PageContainerFooter } from '../../ui/page-container'
 
@@ -21,9 +22,48 @@ export default class PermissionPageContainer extends Component {
   constructor (props) {
     super(props)
     this.state = {
+      selectedPermissions: this.getRequestedMethodState(
+        this.getRequestedMethodNames(props)
+      ),
       selectedAccount: props.selectedIdentity,
     }
   }
+
+  componentDidUpdate (prevProps) {
+    const prevMethodNames = this.getRequestedMethodNames(prevProps)
+    const newMethodNames = this.getRequestedMethodNames(this.props)
+
+    if (!equal(prevMethodNames, newMethodNames)) {
+      // this should be a new request, so just overwrite
+      this.setState({
+        selectedPermissions: this.getRequestedMethodState(newMethodNames)
+      })
+    }
+  }
+
+  getRequestedMethodState (methodNames) {
+    return methodNames.reduce(
+      (acc, methodName) => {
+        acc[methodName] = true
+        return acc
+      },
+      {}
+    )
+  }
+
+  getRequestedMethodNames (props) {
+    return Object.keys(props.requests[0].permissions)
+  }
+
+  onPermissionToggle = methodName => () => {
+    this.setState({
+      selectedPermissions: {
+        ...this.state.selectedPermissions,
+        [methodName]: !this.state.selectedPermissions[methodName]
+      }
+    })
+  }
+
 
   componentDidMount () {
     this.context.metricsEvent({
@@ -37,8 +77,7 @@ export default class PermissionPageContainer extends Component {
 
   onCancel = () => {
     const { requests, rejectPermissionsRequest } = this.props
-    const id = requests[0].metadata.id
-    rejectPermissionsRequest(id)
+    rejectPermissionsRequest(requests[0].metadata.id)
   }
 
   onSubmit = () => {
@@ -50,16 +89,40 @@ export default class PermissionPageContainer extends Component {
       )
     }
 
-    const { requests, approvePermissionsRequest } = this.props
+    const {
+      requests, approvePermissionsRequest, rejectPermissionsRequest
+    } = this.props
+    const request = {
+      ...requests[0],
+      permissions: { ...requests[0].permissions }
+    }
+    Object.keys(this.state.selectedPermissions).forEach(key => {
+      if (!this.state.selectedPermissions[key]) {
+        delete request.permissions[key]
+      }
+    })
 
-    if ('eth_accounts' in requests[0].permissions) {
-      requests[0].permissions.eth_accounts = {
+    // TODO:lps:review do we have any concerns about caveat creation occuring
+    // here? perhaps we should have a factory method somewhere else?
+    if ('eth_accounts' in request.permissions) {
+      request.permissions.eth_accounts = {
         caveats: [
-          { type: 'filterResponse', value: [this.state.selectedAccount.address] },
+          {
+            type: 'filterResponse',
+            value: [this.state.selectedAccount.address]
+          },
         ],
       }
     }
-    approvePermissionsRequest(requests[0])
+
+    // TODO:lps:review here we treat the deselection of all permissions as
+    // a rejection. That's probably fine, but should we communicate to the
+    // dapp which permissions were granted?
+    if (Object.keys(request.permissions).length > 0) {
+      approvePermissionsRequest(request)
+    } else {
+      rejectPermissionsRequest(request.metadata.id)
+    }
   }
 
   onAccountSelect = selectedAccount => {
@@ -73,16 +136,18 @@ export default class PermissionPageContainer extends Component {
       <div className="page-container permission-approval-container">
         <PermissionPageContainerHeader />
         <PermissionPageContainerContent
-          requests={requests}
+          metadata={requests[0].metadata}
+          selectedPermissions={this.state.selectedPermissions}
+          permissionsDescriptions={permissionsDescriptions}
+          onPermissionToggle={this.onPermissionToggle}
           onAccountSelect={this.onAccountSelect}
           selectedAccount={this.state.selectedAccount}
-          permissionsDescriptions={permissionsDescriptions}
         />
         <PageContainerFooter
           onCancel={() => this.onCancel()}
           cancelText={this.context.t('cancel')}
           onSubmit={() => this.onSubmit()}
-          submitText={this.context.t('connect')}
+          submitText={this.context.t('submit')}
           submitButtonType="confirm"
         />
       </div>

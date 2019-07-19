@@ -10,6 +10,7 @@ import NetworksTab from './networks-tab'
 import AdvancedTab from './advanced-tab'
 import InfoTab from './info-tab'
 import SecurityTab from './security-tab'
+import PermissionsTab from './permissions-tab'
 import {
   DEFAULT_ROUTE,
   ADVANCED_ROUTE,
@@ -18,12 +19,14 @@ import {
   ABOUT_US_ROUTE,
   SETTINGS_ROUTE,
   NETWORKS_ROUTE,
+  PERMISSIONS_ROUTE,
 } from '../../helpers/constants/routes'
 
 const ROUTES_TO_I18N_KEYS = {
   [GENERAL_ROUTE]: 'general',
   [ADVANCED_ROUTE]: 'advanced',
   [SECURITY_ROUTE]: 'securityAndPrivacy',
+  [PERMISSIONS_ROUTE]: 'permissions',
   [ABOUT_US_ROUTE]: 'about',
 }
 
@@ -106,6 +109,7 @@ class SettingsPage extends PureComponent {
           { content: t('general'), description: t('generalSettingsDescription'), key: GENERAL_ROUTE },
           { content: t('advanced'), description: t('advancedSettingsDescription'), key: ADVANCED_ROUTE },
           { content: t('securityAndPrivacy'), description: t('securitySettingsDescription'), key: SECURITY_ROUTE },
+          { content: t('permissions'), description: t('permissionsSettingsDescription'), key: PERMISSIONS_ROUTE },
           { content: t('networks'), description: t('networkSettingsDescription'), key: NETWORKS_ROUTE },
           { content: t('about'), description: t('aboutSettingsDescription'), key: ABOUT_US_ROUTE },
         ]}
@@ -147,6 +151,11 @@ class SettingsPage extends PureComponent {
           exact
           path={SECURITY_ROUTE}
           component={SecurityTab}
+        />
+        <Route
+          exact
+          path={PERMISSIONS_ROUTE}
+          component={PermissionsTab}
         />
         <Route
           component={SettingsTab}

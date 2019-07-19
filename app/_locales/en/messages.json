@@ -23,16 +23,16 @@
   "contractInteraction": {
     "message": "Contract Interaction"
   },
-  "clearApprovalDataSuccess": {
+  "clearPermissionsDataSuccess": {
     "message": "Dapp/website permissions cleared successfully."
   },
-  "approvalData": {
+  "permissionsData": {
     "message": "Dapp/Website Permissions"
   },
-  "approvalDataDescription": {
+  "permissionsDataDescription": {
     "message": "Clear permissions so all dapps/websites must request access again."
   },
-  "clearApprovalData": {
+  "clearPermissionsData": {
     "message": "Clear Permissions"
   },
   "reject": {
@@ -318,8 +318,8 @@
   "connect": {
     "message": "Connect"
   },
-  "connectRequest": {
-    "message": "Connect Request"
+  "permissionsRequest": {
+    "message": "Permissions Request"
   },
   "connecting": {
     "message": "Connecting..."
@@ -1143,6 +1143,12 @@
   },
   "pending": {
     "message": "pending"
+  },
+  "permissions": {
+    "message": "Permissions"
+  },
+  "permissionsSettingsDescription": {
+    "message": "Manage dapp/website permissions."
   },
   "personalAddressDetected": {
     "message": "Personal address detected. Input the token contract address."

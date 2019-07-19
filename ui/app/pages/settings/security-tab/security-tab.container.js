@@ -5,7 +5,6 @@ import { withRouter } from 'react-router-dom'
 import {
   displayWarning,
   revealSeedConfirmation,
-  showModal,
   setParticipateInMetaMetrics,
 } from '../../../store/actions'
 
@@ -25,7 +24,6 @@ const mapDispatchToProps = dispatch => {
   return {
     displayWarning: warning => dispatch(displayWarning(warning)),
     revealSeedConfirmation: () => dispatch(revealSeedConfirmation()),
-    showClearApprovalModal: () => dispatch(showModal({ name: 'CLEAR_PERMISSIONS' })),
     setParticipateInMetaMetrics: (val) => dispatch(setParticipateInMetaMetrics(val)),
   }
 }

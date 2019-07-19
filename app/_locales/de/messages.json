@@ -17,16 +17,16 @@
   "confirmClear": {
     "message": "Möchten Sie die genehmigten Websites wirklich löschen?"
   },
-  "clearApprovalDataSuccess": {
+  "clearPermissionsDataSuccess": {
     "message": "Genehmigte Website-Daten wurden erfolgreich gelöscht."
   },
-  "approvalData": {
+  "permissionsData": {
     "message": "Genehmigungsdaten"
   },
-  "approvalDataDescription": {
+  "permissionsDataDescription": {
     "message": "Löschen Sie die genehmigten Website-Daten, damit alle Websites erneut eine Genehmigung anfordern müssen."
   },
-  "clearApprovalData": {
+  "clearPermissionsData": {
     "message": "Genehmigungsdaten löschen"
   },
   "approve": {

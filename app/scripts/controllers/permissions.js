@@ -52,8 +52,10 @@ class PermissionsController {
        * are blocked further up the stack. The goal must be to keep the RPC
        * calls out of the rpc-cap middleware until the extension is unlocked.
        */
-      // wait for unlock
-      if (!keyring.memStore.getState().isUnlocked) {
+      if (
+        !keyring.memStore.getState().isUnlocked
+        && !SAFE_METHODS.includes(req.method)
+      ) {
         try {
           this._openPopup()
           await new Promise((resolve, reject) => {
@@ -79,8 +81,7 @@ class PermissionsController {
           !Array.isArray(req.params) ||
           req.params.length !== 1 ||
           typeof req.params[0] !== 'object' ||
-          Array.isArray(req.params[0]) ||
-          Object.keys(req.params[0]).length !== 1
+          Array.isArray(req.params[0])
         ) throw new Error('Bad request.')
 
         // add unique id and site metadata to request params, as expected by

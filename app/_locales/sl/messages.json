@@ -23,16 +23,16 @@
   "contractInteraction": {
     "message": "Interakcija s pogodbo"
   },
-  "clearApprovalDataSuccess": {
+  "clearPermissionsDataSuccess": {
     "message": "Odobrene spletne strani uspešno počiščene."
   },
-  "approvalData": {
+  "permissionsData": {
     "message": "Podatki o odobritvi"
   },
-  "approvalDataDescription": {
+  "permissionsDataDescription": {
     "message": "Počistite seznam odobrenih spletnih strani, tako da bodo morale ponovno zahtevati odobritev."
   },
-  "clearApprovalData": {
+  "clearPermissionsData": {
     "message": "Počisti podatke o odobritvi"
   },
   "providerAPIRequest": {

@@ -23,16 +23,16 @@
   "contractInteraction": {
     "message": "Interazione Contratto"
   },
-  "clearApprovalDataSuccess": {
+  "clearPermissionsDataSuccess": {
     "message": "Dati del sito Web approvati cancellati correttamente."
   },
-  "approvalData": {
+  "permissionsData": {
     "message": "Dati di approvazione"
   },
-  "approvalDataDescription": {
+  "permissionsDataDescription": {
     "message": "Cancella i dati del sito web approvati, quindi tutti i siti devono richiedere nuovamente l'approvazione."
   },
-  "clearApprovalData": {
+  "clearPermissionsData": {
     "message": "Cancella i dati di approvazione"
   },
   "reject": {
@@ -311,9 +311,6 @@
   },
   "connect": {
     "message": "Connetti"
-  },
-  "connectRequest": {
-    "message": "Richiesta Connessione"
   },
   "connecting": {
     "message": "Connessione..."

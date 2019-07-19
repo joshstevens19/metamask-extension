@@ -17,16 +17,16 @@
   "confirmClear": {
     "message": "承認されたウェブサイトをクリアしてもよろしいですか？"
   },
-  "clearApprovalDataSuccess": {
+  "clearPermissionsDataSuccess": {
     "message": "承認されたウェブサイトデータが正常に消去されました。"
   },
-  "approvalData": {
+  "permissionsData": {
     "message": "承認データ"
   },
-  "approvalDataDescription": {
+  "permissionsDataDescription": {
     "message": "承認されたウェブサイトのデータをクリアすると、すべてのサイトで承認を再度要求する必要があります"
   },
-  "clearApprovalData": {
+  "clearPermissionsData": {
     "message": "承認データのクリア"
   },
   "approve": {
