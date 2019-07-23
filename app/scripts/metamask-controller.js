@@ -34,7 +34,7 @@ const TransactionController = require('./controllers/transactions')
 const BalancesController = require('./controllers/computed-balances')
 const TokenRatesController = require('./controllers/token-rates')
 const DetectTokensController = require('./controllers/detect-tokens')
-const PermissionsController = require('./controllers/permissions')
+const { PermissionsController } = require('./controllers/permissions')
 const nodeify = require('./lib/nodeify')
 const accountImporter = require('./account-import-strategies')
 const getBuyEthUrl = require('./lib/buy-eth-url')
@@ -499,6 +499,7 @@ module.exports = class MetamaskController extends EventEmitter {
       // permissions
       approvePermissionsRequest: nodeify(this.permissionsController.approvePermissionsRequest, this.permissionsController),
       rejectPermissionsRequest: nodeify(this.permissionsController.rejectPermissionsRequest, this.permissionsController),
+      removePermissionsFor: this.permissionsController.removePermissionsFor.bind(this.permissionsController),
       clearPermissions: this.permissionsController.clearPermissions.bind(this.permissionsController),
     }
   }

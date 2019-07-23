@@ -24,16 +24,25 @@
     "message": "Contract Interaction"
   },
   "clearPermissionsDataSuccess": {
-    "message": "Dapp/website permissions cleared successfully."
+    "message": "Permissions cleared successfully."
   },
   "permissionsData": {
-    "message": "Dapp/Website Permissions"
+    "message": "Manage Permissions"
   },
   "permissionsDataDescription": {
-    "message": "Clear permissions so all dapps/websites must request access again."
+    "message": "All currently granted permissions, by dapp/website. Deselect permissions and click \"Update Permissions\" to remove them."
+  },
+  "permissionsDataEmpty": {
+    "message": "No permissions found."
+  },
+  "clearPermissionsDataDescription": {
+    "message": "Clear permissions so that all dapps/websites must request access again."
   },
   "clearPermissionsData": {
     "message": "Clear Permissions"
+  },
+  "updatePermissionsData": {
+    "message": "Update Permissions"
   },
   "reject": {
     "message": "Reject"

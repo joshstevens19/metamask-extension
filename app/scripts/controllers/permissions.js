@@ -7,6 +7,12 @@ const uuid = require('uuid/v4')
 // Methods that do not require any permissions to use:
 const SAFE_METHODS = require('../lib/permissions-safe-methods.json')
 
+const METHOD_PREFIX = 'wallet_'
+
+function prefix (method) {
+  return METHOD_PREFIX + method
+}
+
 // listener call back for keyring store updates
 const updateCallback = resolve => state => {
   if (state.isUnlocked) resolve()
@@ -22,8 +28,6 @@ class PermissionsController {
     this._closePopup = closePopup
     this.keyringController = keyringController
     this._initializePermissions(restoredState)
-    // TODO:deprecate ?
-    this.engines = {}
   }
 
   createMiddleware (options) {
@@ -33,7 +37,6 @@ class PermissionsController {
     engine.push(this.permissions.providerMiddlewareFunction.bind(
       this.permissions, { origin }
     ))
-    this.engines[origin] = engine
     return asMiddleware(engine)
   }
 
@@ -75,7 +78,7 @@ class PermissionsController {
       }
 
       // validate and add metadata to permissions requests
-      if (req.method === 'wallet_requestPermissions') {
+      if (req.method === prefix('requestPermissions')) {
 
         if (
           !Array.isArray(req.params) ||
@@ -111,31 +114,41 @@ class PermissionsController {
    */
   async getAccounts (origin) {
     return new Promise((resolve, reject) => {
-      // TODO:lps:review This error will almost certainly occur when permissions
-      // are cleared (see clearPermissions below). Rejecting with an error
-      // may be fine?
-      if (!this.engines[origin]) reject(new Error('Unknown origin: ${origin}'))
-      this.engines[origin].handle(
-        { method: 'eth_accounts' },
-        (err, res) => {
-          if (err || res.error || !Array.isArray(res.result)) {
-            resolve([])
-          } else {
-            resolve(res.result)
-          }
-        }
+      const req = { method: 'eth_accounts' }
+      const res = {}
+      this.permissions.providerMiddlewareFunction(
+        { origin }, req, res, () => {}, _end
+      )
+      
+      // TODO:lps:review we are returning an empty array here instead
+      // of the error, if it exists. Should we do so?
+      function _end() {
+        if (res.error || !Array.isArray(res.result)) resolve([])
+        else resolve(res.result)
+      }
+    })
+  }
+
+  /**
+   * Removes the given permissions for the given domain.
+   * @param {object} domains { origin: [permissions] }
+   */
+  removePermissionsFor (domains) {
+    Object.entries(domains).forEach(([origin, perms]) => {
+      this.permissions.removePermissionsFor(
+        origin,
+        perms.map(methodName => {
+          return { parentCapability: methodName }
+        })
       )
     })
   }
 
   /**
-   * Removes all known domains their related permissions.
+   * Removes all known domains and their related permissions.
    */
   clearPermissions () {
     this.permissions.clearDomains()
-    Object.keys(this.engines).forEach(s => {
-      delete this.engines[s]
-    })
   }
 
   /**
@@ -182,7 +195,7 @@ class PermissionsController {
       safeMethods: SAFE_METHODS,
 
       // optional prefix for internal methods
-      methodPrefix: 'wallet_',
+      methodPrefix: METHOD_PREFIX,
 
       restrictedMethods: {
 
@@ -251,4 +264,7 @@ class PermissionsController {
 
 }
 
-module.exports = PermissionsController
+module.exports = {
+  PermissionsController,
+  addInternalMethodPrefix: prefix,
+}

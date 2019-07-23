@@ -8,7 +8,7 @@ export default class PermissionPageContainerContent extends PureComponent {
   static propTypes = {
     metadata: PropTypes.object.isRequired,
     selectedPermissions: PropTypes.object.isRequired,
-    permissionsDescriptions: PropTypes.array.isRequired,
+    permissionsDescriptions: PropTypes.object.isRequired,
     onPermissionToggle: PropTypes.func.isRequired,
     selectedAccount: PropTypes.object.isRequired,
     onAccountSelect: PropTypes.func.isRequired,
@@ -63,17 +63,11 @@ export default class PermissionPageContainerContent extends PureComponent {
 
     const items = Object.keys(selectedPermissions).map((methodName) => {
 
-      const matchingFuncs = permissionsDescriptions.filter((perm) => {
-        return perm.method === methodName
-      })
-
-      let description
-      if (matchingFuncs[0]) {
-        description = matchingFuncs[0].description
-      } else {
+      if (!permissionsDescriptions[methodName]) {
+        // TODO:lps:review what do with this? Will this ever happen?
         console.warn('Unknown permission requested.')
-        description = 'UNKNOWN PERMISSION'
       }
+      const description = permissionsDescriptions[methodName] || methodName
 
       return (
         <li key={methodName}>

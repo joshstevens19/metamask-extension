@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import equal from 'fast-deep-equal'
+import deepEqual from 'fast-deep-equal'
 import { PermissionPageContainerContent, PermissionPageContainerHeader } from '.'
 import { PageContainerFooter } from '../../ui/page-container'
 
@@ -10,7 +10,7 @@ export default class PermissionPageContainer extends Component {
     approvePermissionsRequest: PropTypes.func.isRequired,
     rejectPermissionsRequest: PropTypes.func.isRequired,
     selectedIdentity: PropTypes.object.isRequired,
-    permissionsDescriptions: PropTypes.array.isRequired,
+    permissionsDescriptions: PropTypes.object.isRequired,
     requests: PropTypes.array.isRequired,
   };
 
@@ -29,11 +29,10 @@ export default class PermissionPageContainer extends Component {
     }
   }
 
-  componentDidUpdate (prevProps) {
-    const prevMethodNames = this.getRequestedMethodNames(prevProps)
+  componentDidUpdate () {
     const newMethodNames = this.getRequestedMethodNames(this.props)
 
-    if (!equal(prevMethodNames, newMethodNames)) {
+    if (!deepEqual(Object.keys(this.state.selectedPermissions), newMethodNames)) {
       // this should be a new request, so just overwrite
       this.setState({
         selectedPermissions: this.getRequestedMethodState(newMethodNames)
@@ -63,7 +62,6 @@ export default class PermissionPageContainer extends Component {
       }
     })
   }
-
 
   componentDidMount () {
     this.context.metricsEvent({
