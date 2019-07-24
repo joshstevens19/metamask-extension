@@ -113,9 +113,6 @@ export default class PermissionPageContainer extends Component {
       }
     }
 
-    // TODO:lps:review here we treat the deselection of all permissions as
-    // a rejection. That's probably fine, but should we communicate to the
-    // dapp which permissions were granted?
     if (Object.keys(request.permissions).length > 0) {
       approvePermissionsRequest(request)
     } else {

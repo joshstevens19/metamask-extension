@@ -63,8 +63,10 @@ export default class PermissionPageContainerContent extends PureComponent {
 
     const items = Object.keys(selectedPermissions).map((methodName) => {
 
+      // TODO:lps:review is this how we want to handle permissions without
+      // descriptions? In all current cases, if this condition triggers,
+      // approving the permissions will fail.
       if (!permissionsDescriptions[methodName]) {
-        // TODO:lps:review what do with this? Will this ever happen?
         console.warn('Unknown permission requested.')
       }
       const description = permissionsDescriptions[methodName] || methodName

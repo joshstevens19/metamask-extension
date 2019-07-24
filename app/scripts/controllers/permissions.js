@@ -46,36 +46,30 @@ class PermissionsController {
   createRequestMiddleware () {
     return createAsyncMiddleware(async (req, res, next) => {
 
-      const keyring = this.keyringController
 
       /**
-       * TODO:lps:review as a placeholder, we currently set a 10-second timer,
-       * then reject the request. We can't use a .once listener, for reasons
-       * described below. Recommend re-implementing this such that RPC calls
-       * are blocked further up the stack. The goal must be to keep the RPC
-       * calls out of the rpc-cap middleware until the extension is unlocked.
+       * TODO:lps:review I believe we should centralize permissioning
+       * logic by blocking requests here. For example, the extension currently
+       * behaves differently when it receives an eth_accounts call while locked.
+       * If the calling domain has the permission, an empty array is returned
+       * by the KeyringController's locked behavior. If it does not have the
+       * permission, an auth error is thrown.
+       * Centralizing this logic here requires thoughtful design.
        */
-      if (
-        !keyring.memStore.getState().isUnlocked
-        && !SAFE_METHODS.includes(req.method)
-      ) {
-        try {
-          this._openPopup()
-          await new Promise((resolve, reject) => {
-            let cb = updateCallback(resolve)
-            // we cannot use .once since we cannot know which 'update' event
-            // changes the isUnlocked property
-            keyring.memStore.on('update', cb)
-            setTimeout(() => {
-              reject()
-              keyring.memStore.removeListener('update', cb)
-            }, 10000)
-          })
-        } catch (error) {
-          res.error = { code: 1, message: 'User denied access.' }
-          return
-        }
-      }
+      // if (
+      //   !keyring.memStore.getState().isUnlocked
+      //   && !SAFE_METHODS.includes(req.method)
+      // ) {
+      //   try {
+      //     this._openPopup()
+      //     await new Promise((resolve, reject) => {
+      //       ...
+      //     })
+      //   } catch (error) {
+      //     res.error = { code: 1, message: 'User denied access.' }
+      //     return
+      //   }
+      // }
 
       // validate and add metadata to permissions requests
       if (req.method === prefix('requestPermissions')) {
@@ -106,7 +100,8 @@ class PermissionsController {
     })
   }
 
-  // TODO:lps:review see initializeProvider() in metamask-controller
+  // TODO:lps:review see initializeProvider() in metamask-controller for why this
+  // method exists
   /**
    * Returns the accounts that should be exposed for the given origin domain,
    * if any.
@@ -120,8 +115,6 @@ class PermissionsController {
         { origin }, req, res, () => {}, _end
       )
       
-      // TODO:lps:review we are returning an empty array here instead
-      // of the error, if it exists. Should we do so?
       function _end() {
         if (res.error || !Array.isArray(res.result)) resolve([])
         else resolve(res.result)
@@ -158,8 +151,8 @@ class PermissionsController {
   async approvePermissionsRequest (approved) {
     const { id } = approved.metadata
     const approval = this.pendingApprovals[id]
-    const res = approval.res
-    res(approved.permissions)
+    const resolve = approval.resolve
+    resolve(approved.permissions)
     this._closePopup && this._closePopup()
     delete this.pendingApprovals[id]
   }
@@ -170,8 +163,8 @@ class PermissionsController {
    */
   async rejectPermissionsRequest (id) {
     const approval = this.pendingApprovals[id]
-    const rej = approval.rej
-    rej(false)
+    const reject = approval.reject
+    reject(false) // TODO:lps:review should this be an error instead?
     this._closePopup && this._closePopup()
     delete this.pendingApprovals[id]
   }
@@ -250,8 +243,8 @@ class PermissionsController {
 
         this._openPopup && this._openPopup()
 
-        return new Promise((res, rej) => {
-          this.pendingApprovals[id] = { res, rej }
+        return new Promise((resolve, reject) => {
+          this.pendingApprovals[id] = { resolve, reject }
         },
         // TODO: This should be persisted/restored state.
         {})
