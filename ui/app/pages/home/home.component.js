@@ -47,8 +47,6 @@ export default class Home extends PureComponent {
   render () {
     const {
       forgottenPassword,
-      seedWords,
-      permissionsRequests,
       history,
       permissionsRequests,
     } = this.props

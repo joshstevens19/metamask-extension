@@ -7,7 +7,7 @@ import {
   removePermissionsFor,
 } from '../../../store/actions'
 import {
-  getAllPermissions, getPermissionsDescriptions
+  getAllPermissions, getPermissionsDescriptions,
 } from '../../../selectors/selectors'
 
 const mapStateToProps = state => {

@@ -35,7 +35,7 @@ export default class PermissionPageContainer extends Component {
     if (!deepEqual(Object.keys(this.state.selectedPermissions), newMethodNames)) {
       // this should be a new request, so just overwrite
       this.setState({
-        selectedPermissions: this.getRequestedMethodState(newMethodNames)
+        selectedPermissions: this.getRequestedMethodState(newMethodNames),
       })
     }
   }
@@ -58,8 +58,8 @@ export default class PermissionPageContainer extends Component {
     this.setState({
       selectedPermissions: {
         ...this.state.selectedPermissions,
-        [methodName]: !this.state.selectedPermissions[methodName]
-      }
+        [methodName]: !this.state.selectedPermissions[methodName],
+      },
     })
   }
 
@@ -88,11 +88,11 @@ export default class PermissionPageContainer extends Component {
     }
 
     const {
-      requests, approvePermissionsRequest, rejectPermissionsRequest
+      requests, approvePermissionsRequest, rejectPermissionsRequest,
     } = this.props
     const request = {
       ...requests[0],
-      permissions: { ...requests[0].permissions }
+      permissions: { ...requests[0].permissions },
     }
     Object.keys(this.state.selectedPermissions).forEach(key => {
       if (!this.state.selectedPermissions[key]) {
@@ -109,7 +109,7 @@ export default class PermissionPageContainer extends Component {
       request.permissions.eth_accounts.caveats.push(
         {
           type: 'filterResponse',
-          value: [this.state.selectedAccount.address]
+          value: [this.state.selectedAccount.address],
         },
       )
     }

@@ -17,7 +17,7 @@ function prefix (method) {
 class PermissionsController {
 
   constructor ({
-    openPopup, closePopup, keyringController
+    openPopup, closePopup, keyringController,
   } = {}, restoredState) {
     this._openPopup = openPopup
     this._closePopup = closePopup
@@ -39,8 +39,7 @@ class PermissionsController {
    * Create middleware for preprocessing permissions requests.
    */
   createRequestMiddleware () {
-    return createAsyncMiddleware(async (req, res, next) => {
-
+    return createAsyncMiddleware(async (req, _, next) => {
 
       /**
        * TODO:lps:review I believe we should centralize permissioning
@@ -103,14 +102,14 @@ class PermissionsController {
    * @param {string} origin
    */
   async getAccounts (origin) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
       const req = { method: 'eth_accounts' }
       const res = {}
       this.permissions.providerMiddlewareFunction(
         { origin }, req, res, () => {}, _end
       )
-      
-      function _end() {
+
+      function _end () {
         if (res.error || !Array.isArray(res.result)) resolve([])
         else resolve(res.result)
       }

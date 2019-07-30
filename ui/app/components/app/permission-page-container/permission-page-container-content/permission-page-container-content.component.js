@@ -20,7 +20,7 @@ export default class PermissionPageContainerContent extends PureComponent {
 
   renderPermissionApprovalVisual = () => {
     const {
-      metadata, selectedAccount, onAccountSelect
+      metadata, selectedAccount, onAccountSelect,
     } = this.props
 
     return (
@@ -58,7 +58,7 @@ export default class PermissionPageContainerContent extends PureComponent {
 
   renderRequestedPermissions () {
     const {
-      onPermissionToggle, selectedPermissions, permissionsDescriptions
+      onPermissionToggle, selectedPermissions, permissionsDescriptions,
     } = this.props
 
     const items = Object.keys(selectedPermissions).map((methodName) => {
