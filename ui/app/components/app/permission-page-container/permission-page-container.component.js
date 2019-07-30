@@ -103,14 +103,15 @@ export default class PermissionPageContainer extends Component {
     // TODO:lps:review do we have any concerns about caveat creation occuring
     // here? perhaps we should have a factory method somewhere else?
     if ('eth_accounts' in request.permissions) {
-      request.permissions.eth_accounts = {
-        caveats: [
-          {
-            type: 'filterResponse',
-            value: [this.state.selectedAccount.address]
-          },
-        ],
+      if (!request.permissions.eth_accounts.caveats) {
+        request.permissions.eth_accounts.caveats = []
       }
+      request.permissions.eth_accounts.caveats.push(
+        {
+          type: 'filterResponse',
+          value: [this.state.selectedAccount.address]
+        },
+      )
     }
 
     if (Object.keys(request.permissions).length > 0) {

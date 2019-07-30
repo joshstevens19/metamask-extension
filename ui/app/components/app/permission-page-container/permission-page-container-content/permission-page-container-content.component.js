@@ -74,9 +74,11 @@ export default class PermissionPageContainerContent extends PureComponent {
       return (
         <li key={methodName}>
           <input
+            className="permission-approval-container__content__checkbox"
             type="checkbox"
             checked={selectedPermissions[methodName]}
             onChange={onPermissionToggle(methodName)}
+            disabled={methodName === 'eth_accounts'}
           />
           <label>{description}</label>
         </li>

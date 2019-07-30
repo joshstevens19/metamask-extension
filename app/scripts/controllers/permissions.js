@@ -13,11 +13,6 @@ function prefix (method) {
   return METHOD_PREFIX + method
 }
 
-// listener call back for keyring store updates
-const updateCallback = resolve => state => {
-  if (state.isUnlocked) resolve()
-}
-
 // class PermissionsController extends SafeEventEmitter {
 class PermissionsController {
 
