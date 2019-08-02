@@ -380,6 +380,10 @@ var actions = {
   setSeedPhraseBackedUp,
   verifySeedPhrase,
   SET_SEED_PHRASE_BACKED_UP_TO_TRUE: 'SET_SEED_PHRASE_BACKED_UP_TO_TRUE',
+
+  show3BoxModalAfterImport,
+  SHOW_3BOX_MODAL_AFTER_IMPORT: 'SHOW_3BOX_MODAL_AFTER_IMPORT',
+  restoreFromThreeBox,
 }
 
 module.exports = actions
@@ -2806,6 +2810,32 @@ function setSeedPhraseBackedUp (seedPhraseBackupState) {
           return reject(err)
         }
         return forceUpdateMetamaskState(dispatch).then(() => resolve())
+      })
+    })
+  }
+}
+
+function hideSeedPhraseBackupAfterOnboarding () {
+  return {
+    type: actions.HIDE_SEED_PHRASE_BACKUP_AFTER_ONBOARDING,
+  }
+}
+
+function show3BoxModalAfterImport () {
+  return {
+    type: actions.SHOW_3BOX_MODAL_AFTER_IMPORT,
+  }
+}
+
+function restoreFromThreeBox(accountAddress) {
+  return (dispatch) => {
+    return new Promise((resolve, reject) => {
+      background.restoreFromThreeBox(accountAddress, (err) => {
+        if (err) {
+          dispatch(actions.displayWarning(err.message))
+          return reject(err)
+        }
+        resolve()
       })
     })
   }

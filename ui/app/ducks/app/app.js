@@ -73,6 +73,8 @@ function reduceApp (state, action) {
     networksTabSelectedRpcUrl: '',
     networksTabIsInAddMode: false,
     loadingMethodData: false,
+    showingSeedPhraseBackupAfterOnboarding: false,
+    show3BoxModalAfterImport: false,
   }, state.appState)
 
   switch (action.type) {
@@ -756,7 +758,22 @@ function reduceApp (state, action) {
         loadingMethodData: false,
       })
 
-    default:
+    case actions.SHOW_SEED_PHRASE_BACKUP_AFTER_ONBOARDING:
+      return extend(appState, {
+        showingSeedPhraseBackupAfterOnboarding: true,
+      })
+
+    case actions.HIDE_SEED_PHRASE_BACKUP_AFTER_ONBOARDING:
+      return extend(appState, {
+        showingSeedPhraseBackupAfterOnboarding: false,
+      })
+
+     case actions.SHOW_3BOX_MODAL_AFTER_IMPORT:
+       return extend(appState, {
+         show3BoxModalAfterImport: true,
+       })
+
+     default:
       return appState
   }
 }
