@@ -117,7 +117,7 @@ class Routes extends Component {
     }
   }
 
-  componentDidUpdate (prevProps) {
+  componentDidUpdate () {
     const {
       waitingForWyreSigRequest,
       unapprovedPersonalMsgs,
@@ -384,6 +384,7 @@ Routes.propTypes = {
   showDepositModal: PropTypes.func,
   waitForWyreSigRequest: PropTypes.func,
   modal: PropTypes.object,
+  selectedAddress: PropTypes.string,
 }
 
 function mapStateToProps (state) {
@@ -394,8 +395,6 @@ function mapStateToProps (state) {
     alertMessage,
     isLoading,
     loadingMessage,
-    waitingForWyreSigRequest,
-    modal,
   } = appState
 
   const { autoLogoutTimeLimit = 0 } = preferencesSelector(state)
@@ -405,7 +404,6 @@ function mapStateToProps (state) {
     unapprovedMsgCount,
     unapprovedPersonalMsgCount,
     unapprovedTypedMessagesCount,
-    providerRequests,
     unapprovedPersonalMsgs,
   } = metamask
 
